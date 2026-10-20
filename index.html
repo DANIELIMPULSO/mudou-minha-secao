@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mudou Minha Seção?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout concept: mobile-first single search box (combobox) swaps the old
+   cascading selects for one tap/type action; a sticky mini city-bar keeps
+   context while scrolling results; status reads through a left accent
+   stripe + color chips, echoing the alert/novo-local language of the
+   printed carousel cards so the tool feels like the same campaign. */
+:root{
+  --bg:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#f7fafc;
+  --fg:#17293f;
+  --muted:#64798d;
+  --border:#e4eaf0;
+  --accent:#1670b8;
+  --accent-2:#0e9e73;
+  --accent-ink:#ffffff;
+  --alert:#c5362a;
+  --alert-bg:#fdecea;
+  --alert-border:#f5cdc8;
+  --success:#15895a;
+  --success-bg:#eaf8f1;
+  --success-border:#c3e9d6;
+  --chip-bg:#e7f1fa;
+  --shadow:0 1px 2px rgba(21,40,63,.04), 0 8px 24px -12px rgba(21,40,63,.18);
+  --radius-lg:22px;
+  --radius-md:16px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#192635;
+    --surface:#22334a;
+    --surface-2:#293d57;
+    --fg:#f2f7fc;
+    --muted:#aec0d3;
+    --border:#3c5370;
+    --accent:#7fc1f5;
+    --accent-2:#6fe0ae;
+    --accent-ink:#0b1824;
+    --alert:#ffa89e;
+    --alert-bg:#3a2320;
+    --alert-border:#6b332c;
+    --success:#8fe6b9;
+    --success-bg:#1b3a2d;
+    --success-border:#2d5c46;
+    --chip-bg:#2c3f57;
+    --shadow:0 1px 2px rgba(0,0,0,.25), 0 10px 28px -14px rgba(0,0,0,.55);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#192635;
+  --surface:#22334a;
+  --surface-2:#293d57;
+  --fg:#f2f7fc;
+  --muted:#aec0d3;
+  --border:#3c5370;
+  --accent:#7fc1f5;
+  --accent-2:#6fe0ae;
+  --accent-ink:#0b1824;
+  --alert:#ffa89e;
+  --alert-bg:#3a2320;
+  --alert-border:#6b332c;
+  --success:#8fe6b9;
+  --success-bg:#1b3a2d;
+  --success-border:#2d5c46;
+  --chip-bg:#2c3f57;
+  --shadow:0 1px 2px rgba(0,0,0,.25), 0 10px 28px -14px rgba(0,0,0,.55);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  font-family:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  line-height:1.45;
+  overflow-x:hidden;
+}
+h1,h2,h3,.display{
+  font-family:"Archivo",system-ui,sans-serif;
+  text-wrap:balance;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace;font-variant-numeric:tabular-nums;}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important; transition-duration:.001ms !important;}
+}
+
+a{color:var(--accent)}
+button{font-family:inherit}
+
+.gutter{
+  padding-left:max(18px, env(safe-area-inset-left, 0px));
+  padding-right:max(18px, env(safe-area-inset-right, 0px));
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0 0 auto;
+  height:env(safe-area-inset-top, 0px);
+  z-index:30;
+  background:var(--accent);
+}
+
+/* ---------- Hero ---------- */
+header.band{
+  position:relative;
+  background:
+    radial-gradient(120% 140% at 85% -10%, rgba(255,255,255,.16), transparent 55%),
+    linear-gradient(160deg, #2f97dd 0%, var(--accent) 65%, #0d5088 100%);
+  color:var(--accent-ink);
+  padding-block:30px 26px;
+  overflow:hidden;
+}
+header.band .inner{
+  max-width:720px;
+  margin:0 auto;
+  position:relative;
+  z-index:1;
+}
+.hero-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+.eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-family:"Archivo",sans-serif;
+  font-size:11.5px;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.32);
+  border-radius:999px;
+  padding:6px 12px 6px 10px;
+  margin-bottom:16px;
+  backdrop-filter:blur(2px);
+}
+.pin-icon{flex:none}
+header.band h1{
+  font-size:clamp(27px, 7vw, 38px);
+  font-weight:900;
+  margin:0 0 10px;
+  letter-spacing:-.015em;
+  line-height:1.08;
+}
+header.band p{
+  margin:0;
+  max-width:50ch;
+  color:rgba(255,255,255,.9);
+  font-size:15px;
+}
+.stat-strip{
+  display:flex;
+  gap:8px;
+  margin-top:20px;
+  overflow-x:auto;
+  padding-bottom:2px;
+  scrollbar-width:none;
+}
+.stat-strip::-webkit-scrollbar{display:none}
+.stat-pill{
+  flex:none;
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+  background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.26);
+  border-radius:12px;
+  padding:9px 13px;
+  white-space:nowrap;
+}
+.stat-pill b{font-family:"Archivo",sans-serif;font-size:16px;font-weight:800}
+.stat-pill span{font-size:11.5px;color:rgba(255,255,255,.85)}
+
+/* ---------- Main ---------- */
+main{
+  max-width:720px;
+  margin:0 auto;
+  padding-block:20px 56px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  position:relative;
+}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:20px;
+  box-shadow:var(--shadow);
+}
+
+.step-lbl{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:13.5px;
+  font-weight:700;
+  color:var(--muted);
+  letter-spacing:.01em;
+  margin:0 0 14px;
+}
+.step-num{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:22px;height:22px;
+  border-radius:50%;
+  background:var(--accent);
+  color:var(--accent-ink);
+  font-family:"Archivo",sans-serif;
+  font-size:12px;
+  font-weight:800;
+  flex:none;
+}
+
+/* ---------- Combobox ---------- */
+.combo{position:relative}
+.combo-input-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+.combo-input-wrap svg{
+  position:absolute;
+  left:14px;
+  pointer-events:none;
+  color:var(--muted);
+}
+#citySearch{
+  width:100%;
+  min-width:0;
+  font:inherit;
+  font-size:16px;
+  padding:14px 44px 14px 42px;
+  border-radius:14px;
+  border:1.5px solid var(--border);
+  background:var(--surface-2);
+  color:var(--fg);
+}
+#citySearch:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.combo-clear{
+  position:absolute;
+  right:8px;
+  background:none;
+  border:none;
+  color:var(--muted);
+  width:30px;height:30px;
+  border-radius:50%;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+.combo-clear.show{display:flex}
+.combo-clear:hover{background:var(--surface);color:var(--fg)}
+
+.combo-list{
+  position:absolute;
+  left:0;right:0;
+  top:calc(100% + 8px);
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:var(--shadow);
+  max-height:320px;
+  overflow-y:auto;
+  z-index:20;
+  display:none;
+  padding:6px;
+}
+.combo-list.show{display:block}
+.combo-opt{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:12px 12px;
+  border-radius:11px;
+  cursor:pointer;
+  font-size:15px;
+}
+.combo-opt .uf-tag{
+  font-size:11px;
+  font-weight:700;
+  color:var(--muted);
+  background:var(--chip-bg);
+  border-radius:999px;
+  padding:3px 8px;
+  flex:none;
+  font-family:"IBM Plex Mono",monospace;
+}
+.combo-opt.active, .combo-opt:hover{background:var(--surface-2)}
+.combo-empty{
+  padding:16px 12px;
+  font-size:13.5px;
+  color:var(--muted);
+  text-align:center;
+}
+.combo-hint{
+  font-size:12.5px;
+  color:var(--muted);
+  margin:10px 2px 0;
+}
+
+/* ---------- Sticky city bar ---------- */
+.sticky-city{
+  position:sticky;
+  top:calc(8px + env(safe-area-inset-top, 0px));
+  z-index:15;
+  display:none;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:9px 9px 9px 16px;
+  box-shadow:var(--shadow);
+  margin-bottom:-2px;
+}
+.sticky-city.show{display:flex}
+.sticky-city .label{font-size:13.5px;font-weight:700}
+.sticky-city .label .uf{color:var(--muted);font-weight:600}
+.sticky-city button{
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  color:var(--fg);
+  border-radius:999px;
+  padding:7px 13px;
+  font-size:12.5px;
+  font-weight:600;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.sticky-city button:hover{border-color:var(--accent);color:var(--accent)}
+
+#resultsWrap{display:flex;flex-direction:column;gap:16px}
+#resultsWrap[hidden]{display:none}
+
+.city-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:8px 16px;
+  margin-bottom:4px;
+}
+.city-head h2{
+  margin:0;
+  font-size:21px;
+  font-weight:800;
+}
+.city-head .uf{
+  font-size:12.5px;
+  font-weight:700;
+  color:var(--accent);
+  background:var(--chip-bg);
+  border-radius:999px;
+  padding:4px 10px;
+}
+.section-note{font-size:13px;color:var(--muted);margin:2px 0 0}
+
+#secaoInput{
+  width:100%;
+  min-width:0;
+  font:inherit;
+  font-size:15px;
+  padding:13px 14px;
+  border-radius:13px;
+  border:1.5px solid var(--border);
+  background:var(--surface-2);
+  color:var(--fg);
+  margin-top:6px;
+}
+#secaoInput:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+label{
+  display:block;
+  font-size:13.5px;
+  font-weight:700;
+  color:var(--fg);
+}
+
+.highlight-banner{
+  border-radius:16px;
+  padding:16px 18px;
+  display:none;
+  gap:4px;
+  flex-direction:column;
+  margin-top:14px;
+  animation:pop .22s ease;
+}
+@keyframes pop{from{opacity:0; transform:translateY(-4px)} to{opacity:1; transform:translateY(0)}}
+.highlight-banner.show{display:flex}
+.highlight-banner.alert{background:var(--alert-bg); border:1.5px solid var(--alert-border); color:var(--alert);}
+.highlight-banner.ok{background:var(--success-bg); border:1.5px solid var(--success-border); color:var(--success);}
+.highlight-banner.info{background:var(--surface-2); border:1.5px solid var(--border); color:var(--fg);}
+.highlight-banner.info .hb-title{color:var(--accent)}
+.highlight-banner .hb-title{font-family:"Archivo",sans-serif;font-weight:800;font-size:16px;}
+.highlight-banner .hb-sub{font-size:13.5px;color:var(--fg);opacity:.85}
+
+.list-head-row{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:12px;flex-wrap:wrap;gap:8px;
+}
+.list-head-row h2{margin:0;font-size:15px;font-weight:800}
+.btn-ghost{
+  background:none;border:1px solid var(--border);color:var(--muted);
+  border-radius:999px;padding:7px 12px;font-size:12.5px;cursor:pointer;
+}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+.change-list{display:flex;flex-direction:column;gap:12px;max-height:540px;overflow-y:auto;padding:2px 2px 2px 0}
+.change-card{
+  position:relative;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:14px 16px 14px 20px;
+  background:var(--surface);
+  transition:box-shadow .15s, border-color .15s;
+}
+.change-card::before{
+  content:"";
+  position:absolute;
+  left:0;top:10px;bottom:10px;
+  width:4px;
+  border-radius:4px;
+  background:var(--chip-bg);
+}
+.change-card.match{border-color:var(--alert); box-shadow:0 0 0 3px var(--alert-bg);}
+.change-card.match::before{background:var(--alert)}
+.change-card .tag-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.chip{
+  font-size:11.5px;font-weight:700;background:var(--chip-bg);color:var(--fg);
+  border-radius:999px;padding:4px 10px;font-family:"IBM Plex Mono",monospace;
+}
+.block{border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:14px}
+.block:last-of-type{margin-bottom:0}
+.block .block-lbl{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:3px}
+.block.novo{background:var(--success-bg); border:1px solid var(--success-border);}
+.block.novo .block-lbl{color:var(--success)}
+.block.antigo{background:var(--surface-2); border:1px solid var(--border);}
+.block.antigo .block-lbl{color:var(--muted)}
+.addr{font-size:13px;color:var(--muted);margin-top:2px}
+.maplink{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;margin-top:9px;text-decoration:none}
+.maplink:hover{text-decoration:underline}
+
+.empty-city-msg{font-size:14px;color:var(--muted);padding:4px 2px}
+
+footer{max-width:720px;margin:0 auto;padding-block:0 44px}
+footer p{font-size:12.5px;color:var(--muted);line-height:1.6}
+</style>
+</head>
+<body>
+
+
+<header class="band gutter">
+  <div class="inner">
+    <div class="hero-top">
+      <span class="eyebrow">Eleições 2026 · Consulta nacional</span>
+      <svg class="pin-icon" width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <circle cx="20" cy="20" r="19" stroke="rgba(255,255,255,.35)"/>
+        <path d="M20 9c-4.2 0-7.5 3.3-7.5 7.4 0 5.6 7.5 13.6 7.5 13.6s7.5-8 7.5-13.6C27.5 12.3 24.2 9 20 9z" fill="rgba(255,255,255,.92)"/>
+        <circle cx="20" cy="16.3" r="2.8" fill="#0d5088"/>
+      </svg>
+    </div>
+    <h1>Mudou minha seção?</h1>
+    <p>Confira se o seu local de votação foi alterado, com base no levantamento oficial de locais de votação modificados em todo o país.</p>
+    <div class="stat-strip">
+      <div class="stat-pill"><b>23</b><span>estados</span></div>
+      <div class="stat-pill"><b>587</b><span>municípios</span></div>
+      <div class="stat-pill"><b>4.333</b><span>seções</span></div>
+      <div class="stat-pill"><b>1.192</b><span>locais</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="gutter">
+  <div class="sticky-city" id="stickyCity">
+    <span class="label"><span id="stickyCityName">—</span> <span class="uf" id="stickyCityUf"></span></span>
+    <button type="button" id="stickyChangeBtn">Trocar cidade</button>
+  </div>
+
+  <section class="card">
+    <p class="step-lbl"><span class="step-num">1</span> Encontre seu município</p>
+    <div class="combo">
+      <div class="combo-input-wrap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="text" id="citySearch" autocomplete="off" autocapitalize="words" enterkeyhint="search"
+          role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="cityListbox"
+          placeholder="Carregando municípios…" disabled>
+        <button type="button" class="combo-clear" id="comboClear" aria-label="Limpar">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="combo-list" id="cityListbox" role="listbox"></div>
+    </div>
+    <p class="combo-hint">Digite o nome da cidade — com ou sem acento. Cidades de nomes repetidos mostram o estado ao lado.</p>
+  </section>
+
+  <section id="resultsWrap" hidden>
+    <section class="card">
+      <div class="city-head">
+        <h2 id="cityTitle">—</h2>
+        <span class="uf" id="cityUfTag"></span>
+      </div>
+      <p class="section-note" id="citySummary"></p>
+
+      <div style="margin-top:16px">
+        <label for="secaoInput">2. Busque pelo local onde você costumava votar</label>
+        <input type="search" id="secaoInput" placeholder="nome da escola/colégio, rua, bairro — ou a seção, se souber">
+        <p class="section-note" style="margin-top:6px">Não lembra o nome exato? Role a lista abaixo e procure visualmente pelo bairro ou pela escola.</p>
+      </div>
+
+      <div class="highlight-banner alert" id="bannerChanged">
+        <span class="hb-title">⚠️ Sua seção eleitoral mudou!</span>
+        <span class="hb-sub" id="bannerChangedSub"></span>
+      </div>
+      <div class="highlight-banner info" id="bannerNotFound">
+        <span class="hb-title" id="bannerNotFoundTitle">Nenhum resultado para essa busca</span>
+        <span class="hb-sub" id="bannerNotFoundSub"></span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="list-head-row">
+        <h2>Todas as mudanças registradas no município</h2>
+        <button class="btn-ghost" id="clearFilterBtn" type="button">Limpar busca</button>
+      </div>
+      <div class="change-list" id="changeList"></div>
+    </section>
+  </section>
+
+  <section class="card" id="noCityCard">
+    <p class="empty-city-msg">Se o seu município não aparecer na busca acima, ele não consta neste levantamento de locais alterados — não necessariamente que nada mudou. Confirme sempre no app <strong>e-Título</strong> ou em <span class="mono">www.tse.jus.br</span>.</p>
+  </section>
+</main>
+
+<footer class="gutter">
+  <p>Ferramenta informativa baseada no levantamento oficial de locais de votação alterados para as Eleições 2026, com dados agregados por zona e seção. Não substitui a consulta oficial ao Tribunal Superior Eleitoral (TSE) ou ao aplicativo e-Título.</p>
+</footer>
+
+<script>
+(function(){
+  var data = null;
+  var allCities = []; // flat list {uf, m, cards, label}
+  var filtered = [];
+  var activeIdx = -1;
+  var selectedCity = null;
+
+  var citySearch = document.getElementById('citySearch');
+  var comboClear = document.getElementById('comboClear');
+  var cityListbox = document.getElementById('cityListbox');
+  var resultsWrap = document.getElementById('resultsWrap');
+  var noCityCard = document.getElementById('noCityCard');
+  var cityTitle = document.getElementById('cityTitle');
+  var cityUfTag = document.getElementById('cityUfTag');
+  var citySummary = document.getElementById('citySummary');
+  var changeList = document.getElementById('changeList');
+  var secaoInput = document.getElementById('secaoInput');
+  var bannerChanged = document.getElementById('bannerChanged');
+  var bannerChangedSub = document.getElementById('bannerChangedSub');
+  var bannerNotFound = document.getElementById('bannerNotFound');
+  var bannerNotFoundTitle = document.getElementById('bannerNotFoundTitle');
+  var bannerNotFoundSub = document.getElementById('bannerNotFoundSub');
+  var clearFilterBtn = document.getElementById('clearFilterBtn');
+  var stickyCity = document.getElementById('stickyCity');
+  var stickyCityName = document.getElementById('stickyCityName');
+  var stickyCityUf = document.getElementById('stickyCityUf');
+  var stickyChangeBtn = document.getElementById('stickyChangeBtn');
+
+  function norm(s){
+    return String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+  }
+
+  function mapsUrl(end, cep, municipio, uf){
+    var q = [end, cep ? ('CEP ' + cep) : '', municipio, uf].filter(Boolean).join(', ');
+    return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  /* ---------- Combobox ---------- */
+  function openList(){ cityListbox.classList.add('show'); citySearch.setAttribute('aria-expanded','true'); }
+  function closeList(){ cityListbox.classList.remove('show'); citySearch.setAttribute('aria-expanded','false'); activeIdx = -1; }
+
+  function renderOptions(){
+    cityListbox.innerHTML = '';
+    if (filtered.length === 0){
+      var empty = document.createElement('div');
+      empty.className = 'combo-empty';
+      empty.textContent = 'Nenhum município encontrado nesta base.';
+      cityListbox.appendChild(empty);
+      return;
+    }
+    filtered.forEach(function(city, i){
+      var row = document.createElement('div');
+      row.className = 'combo-opt' + (i === activeIdx ? ' active' : '');
+      row.setAttribute('role','option');
+      row.id = 'opt-' + i;
+      var nameEl = document.createElement('span');
+      nameEl.textContent = city.m;
+      var ufEl = document.createElement('span');
+      ufEl.className = 'uf-tag';
+      ufEl.textContent = city.uf;
+      row.appendChild(nameEl);
+      row.appendChild(ufEl);
+      row.addEventListener('mousedown', function(e){
+        e.preventDefault();
+        selectCity(city);
+      });
+      cityListbox.appendChild(row);
+    });
+  }
+
+  function updateFiltered(){
+    var q = norm(citySearch.value);
+    comboClear.classList.toggle('show', citySearch.value.length > 0);
+    if (!q){ filtered = allCities.slice(0, 12); }
+    else {
+      filtered = allCities.filter(function(c){
+        return c.norm.indexOf(q) !== -1 || norm(c.uf) === q;
+      }).slice(0, 25);
+    }
+    activeIdx = -1;
+    renderOptions();
+  }
+
+  function selectCity(city){
+    selectedCity = city;
+    citySearch.value = city.m + ' — ' + city.uf;
+    comboClear.classList.add('show');
+    closeList();
+    showCity(city);
+  }
+
+  citySearch.addEventListener('focus', function(){ updateFiltered(); openList(); });
+  citySearch.addEventListener('input', function(){ updateFiltered(); openList(); });
+  citySearch.addEventListener('keydown', function(e){
+    if (!cityListbox.classList.contains('show') && (e.key === 'ArrowDown' || e.key === 'ArrowUp')){
+      openList(); return;
+    }
+    if (e.key === 'ArrowDown'){
+      e.preventDefault();
+      activeIdx = Math.min(activeIdx + 1, filtered.length - 1);
+      renderOptions();
+      scrollActiveIntoView();
+    } else if (e.key === 'ArrowUp'){
+      e.preventDefault();
+      activeIdx = Math.max(activeIdx - 1, 0);
+      renderOptions();
+      scrollActiveIntoView();
+    } else if (e.key === 'Enter'){
+      e.preventDefault();
+      if (activeIdx >= 0 && filtered[activeIdx]) selectCity(filtered[activeIdx]);
+    } else if (e.key === 'Escape'){
+      closeList();
+    }
+  });
+  function scrollActiveIntoView(){
+    var el = document.getElementById('opt-' + activeIdx);
+    if (el) el.scrollIntoView({block:'nearest'});
+  }
+  document.addEventListener('click', function(e){
+    if (!e.target.closest('.combo')) closeList();
+  });
+  comboClear.addEventListener('click', function(){
+    citySearch.value = '';
+    comboClear.classList.remove('show');
+    selectedCity = null;
+    resultsWrap.hidden = true;
+    noCityCard.hidden = false;
+    stickyCity.classList.remove('show');
+    updateFiltered();
+    citySearch.focus();
+    openList();
+  });
+  stickyChangeBtn.addEventListener('click', function(){
+    citySearch.value = '';
+    selectedCity = null;
+    resultsWrap.hidden = true;
+    noCityCard.hidden = false;
+    stickyCity.classList.remove('show');
+    window.scrollTo({top:0, behavior:'smooth'});
+    updateFiltered();
+    citySearch.focus();
+  });
+
+  /* ---------- Results ---------- */
+  function secaoEquals(a, b){
+    var na = parseInt(a, 10), nb = parseInt(b, 10);
+    if (!isNaN(na) && !isNaN(nb)) return na === nb;
+    return String(a).trim() === String(b).trim();
+  }
+
+  function cardTextMatches(card, q){
+    var hay = norm(card.a) + ' ' + norm(card.an) + ' ' + norm(card.e);
+    return hay.indexOf(q) !== -1;
+  }
+
+  function renderChangeList(cityObj, query){
+    changeList.innerHTML = '';
+    var hasNumeric = query !== null && !isNaN(parseInt(query, 10)) && /^\d+$/.test(query.trim());
+    var qNorm = query !== null ? norm(query) : '';
+    var matchCount = 0;
+    var firstMatch = null;
+
+    cityObj.cards.forEach(function(card){
+      var isMatch = false;
+      if (query !== null && query !== ''){
+        if (hasNumeric && card.s.some(function(s){ return secaoEquals(s, query); })) isMatch = true;
+        else if (!hasNumeric && cardTextMatches(card, qNorm)) isMatch = true;
+      }
+      if (isMatch){ matchCount++; if (!firstMatch) firstMatch = card; }
+
+      var el = document.createElement('div');
+      el.className = 'change-card' + (isMatch ? ' match' : '');
+
+      var tagRow = document.createElement('div');
+      tagRow.className = 'tag-row';
+      var zChip = document.createElement('span');
+      zChip.className = 'chip';
+      zChip.textContent = 'ZONA ' + card.z;
+      tagRow.appendChild(zChip);
+      var sChip = document.createElement('span');
+      sChip.className = 'chip';
+      sChip.textContent = card.s.length > 1 ? ('SEÇÕES ' + card.s.join(', ')) : ('SEÇÃO ' + card.s[0]);
+      tagRow.appendChild(sChip);
+      el.appendChild(tagRow);
+
+      var novo = document.createElement('div');
+      novo.className = 'block novo';
+      novo.innerHTML = '<span class="block-lbl">Novo local (atual)</span>' +
+        escapeHtml(card.a) +
+        '<div class="addr">' + escapeHtml(card.e) + (card.c ? (' · CEP ' + escapeHtml(card.c)) : '') + '</div>';
+      el.appendChild(novo);
+
+      var link = document.createElement('a');
+      link.className = 'maplink';
+      link.href = mapsUrl(card.e, card.c, cityObj.m, cityObj.uf);
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.textContent = '📍 Ver no mapa';
+      el.appendChild(link);
+
+      var antigo = document.createElement('div');
+      antigo.className = 'block antigo';
+      antigo.style.marginTop = '10px';
+      antigo.innerHTML = '<span class="block-lbl">Local anterior</span>' + escapeHtml(card.an);
+      el.appendChild(antigo);
+
+      changeList.appendChild(el);
+
+      if (isMatch && matchCount === 1){
+        requestAnimationFrame(function(){ el.scrollIntoView({block:'nearest', behavior:'smooth'}); });
+      }
+    });
+
+    return {count: matchCount, first: firstMatch, numeric: hasNumeric};
+  }
+
+  function updateSecaoSearch(){
+    if (!selectedCity) return;
+    var raw = secaoInput.value.trim();
+    bannerChanged.classList.remove('show');
+    bannerNotFound.classList.remove('show');
+    if (raw === ''){
+      renderChangeList(selectedCity, null);
+      return;
+    }
+    var res = renderChangeList(selectedCity, raw);
+    if (res.count > 0 && res.numeric){
+      var extra = res.count > 1 ? (' Encontramos ' + res.count + ' resultados com esse número de seção — veja a lista destacada abaixo.') : '';
+      bannerChangedSub.textContent = 'Zona ' + res.first.z + ', Seção ' + raw + ': o novo local é "' + res.first.a + '" (' + res.first.e + (res.first.c ? (', CEP ' + res.first.c) : '') + '). O local anterior era "' + res.first.an + '".' + extra;
+      bannerChanged.classList.add('show');
+    } else if (res.count > 0){
+      bannerNotFoundTitle.textContent = '✅ ' + res.count + ' resultado(s) encontrado(s)';
+      bannerNotFoundSub.textContent = 'Veja a lista destacada abaixo e confirme se reconhece o local onde você costumava votar.';
+      bannerNotFound.className = 'highlight-banner ok show';
+    } else {
+      bannerNotFoundTitle.textContent = 'Nenhum resultado para essa busca';
+      bannerNotFoundSub.textContent = hasNumericGuard(raw)
+        ? 'Segundo esta base, não consta mudança para essa seção. Ainda assim, confirme sempre no app e-Título ou no site do TSE antes da votação.'
+        : 'Não encontramos esse termo entre os locais alterados de ' + selectedCity.m + '. Tente outro nome, uma rua ou bairro próximo — ou confirme no app e-Título.';
+      bannerNotFound.className = 'highlight-banner info show';
+    }
+  }
+  function hasNumericGuard(raw){ return /^\d+$/.test(raw.trim()); }
+
+  function showCity(cityObj){
+    resultsWrap.hidden = false;
+    noCityCard.hidden = true;
+    cityTitle.textContent = cityObj.m;
+    cityUfTag.textContent = (data.estados[cityObj.uf] || cityObj.uf) + ' (' + cityObj.uf + ')';
+    var totalSecoes = cityObj.cards.reduce(function(acc,c){ return acc + c.s.length; }, 0);
+    var zonasSet = {};
+    cityObj.cards.forEach(function(c){ zonasSet[c.z] = true; });
+    var nZonas = Object.keys(zonasSet).length;
+    citySummary.textContent = totalSecoes + ' seção(ões) alterada(s) em ' + nZonas + ' zona(s), agrupadas em ' + cityObj.cards.length + ' local(is).';
+    secaoInput.value = '';
+    bannerChanged.classList.remove('show');
+    bannerNotFound.classList.remove('show');
+    renderChangeList(cityObj, null);
+
+    stickyCityName.textContent = cityObj.m;
+    stickyCityUf.textContent = cityObj.uf;
+    stickyCity.classList.add('show');
+
+    requestAnimationFrame(function(){
+      document.querySelector('#resultsWrap').scrollIntoView({block:'start', behavior:'smooth'});
+    });
+  }
+
+  secaoInput.addEventListener('input', updateSecaoSearch);
+  clearFilterBtn.addEventListener('click', function(){
+    secaoInput.value = '';
+    updateSecaoSearch();
+    secaoInput.focus();
+  });
+
+  fetch('webdata.json')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      data = d;
+      allCities = data.cidades.map(function(c){
+        return {uf: c.uf, m: c.m, cards: c.cards, norm: norm(c.m)};
+      }).sort(function(a,b){ return a.m.localeCompare(b.m, 'pt-BR'); });
+      citySearch.disabled = false;
+      citySearch.placeholder = 'Digite o nome da sua cidade…';
+    })
+    .catch(function(err){
+      citySearch.placeholder = 'Erro ao carregar dados';
+      console.error(err);
+    });
+})();
+</script>
+
+</body>
+</html>
