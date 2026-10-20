@@ -7,7 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Archivo+Black&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
 /* Layout concept: mobile-first single search box (combobox) swaps the old
    cascading selects for one tap/type action; a sticky mini city-bar keeps
@@ -31,6 +31,10 @@
   --success-bg:#eaf8f1;
   --success-border:#c3e9d6;
   --chip-bg:#e7f1fa;
+  --amber:#b45f06;
+  --amber-bg:#fff4e0;
+  --amber-border:#f3d9a3;
+  --whatsapp:#1fa855;
   --shadow:0 1px 2px rgba(21,40,63,.04), 0 8px 24px -12px rgba(21,40,63,.18);
   --radius-lg:22px;
   --radius-md:16px;
@@ -54,6 +58,10 @@
     --success-bg:#1b3a2d;
     --success-border:#2d5c46;
     --chip-bg:#2c3f57;
+    --amber:#ffc266;
+    --amber-bg:#3a2d10;
+    --amber-border:#5c461a;
+    --whatsapp:#3fcd7a;
     --shadow:0 1px 2px rgba(0,0,0,.25), 0 10px 28px -14px rgba(0,0,0,.55);
     color-scheme:dark;
   }
@@ -75,6 +83,10 @@
   --success-bg:#1b3a2d;
   --success-border:#2d5c46;
   --chip-bg:#2c3f57;
+  --amber:#ffc266;
+  --amber-bg:#3a2d10;
+  --amber-border:#5c461a;
+  --whatsapp:#3fcd7a;
   --shadow:0 1px 2px rgba(0,0,0,.25), 0 10px 28px -14px rgba(0,0,0,.55);
   color-scheme:dark;
 }
@@ -153,11 +165,13 @@ header.band .inner{
 }
 .pin-icon{flex:none}
 header.band h1{
-  font-size:clamp(27px, 7vw, 38px);
-  font-weight:900;
+  font-family:"Archivo Black",system-ui,sans-serif;
+  text-transform:uppercase;
+  font-size:clamp(28px, 8.5vw, 42px);
+  font-weight:400;
   margin:0 0 10px;
-  letter-spacing:-.015em;
-  line-height:1.08;
+  letter-spacing:-.01em;
+  line-height:1.02;
 }
 header.band p{
   margin:0;
@@ -187,6 +201,28 @@ header.band p{
 }
 .stat-pill b{font-family:"Archivo",sans-serif;font-size:16px;font-weight:800}
 .stat-pill span{font-size:11.5px;color:rgba(255,255,255,.85)}
+
+/* ---------- Attention banner ---------- */
+.attn-banner{
+  background:var(--amber-bg);
+  border:1.5px solid var(--amber-border);
+  border-radius:var(--radius-lg);
+  padding:18px 20px;
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+}
+.attn-banner .attn-ico{font-size:22px; line-height:1; flex:none; margin-top:2px}
+.attn-banner h2{
+  font-family:"Archivo Black",system-ui,sans-serif;
+  text-transform:uppercase;
+  font-size:17px;
+  color:var(--amber);
+  margin:0 0 6px;
+  letter-spacing:-.01em;
+}
+.attn-banner p{margin:0; font-size:14px; color:var(--fg)}
+.attn-banner a{font-weight:700; text-decoration:underline}
 
 /* ---------- Main ---------- */
 main{
@@ -459,6 +495,7 @@ label{
   font-size:11.5px;font-weight:700;background:var(--chip-bg);color:var(--fg);
   border-radius:999px;padding:4px 10px;font-family:"IBM Plex Mono",monospace;
 }
+.chip.solid{background:var(--accent); color:var(--accent-ink)}
 .block{border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:14px}
 .block:last-of-type{margin-bottom:0}
 .block .block-lbl{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:3px}
@@ -467,8 +504,25 @@ label{
 .block.antigo{background:var(--surface-2); border:1px solid var(--border);}
 .block.antigo .block-lbl{color:var(--muted)}
 .addr{font-size:13px;color:var(--muted);margin-top:2px}
-.maplink{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;margin-top:9px;text-decoration:none}
-.maplink:hover{text-decoration:underline}
+.action-row{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}
+.btn-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  font-size:13px;
+  font-weight:700;
+  padding:10px 16px;
+  border-radius:999px;
+  text-decoration:none;
+  border:none;
+  cursor:pointer;
+  flex:1 1 auto;
+  white-space:nowrap;
+}
+.btn-pill.maps{background:var(--chip-bg); color:var(--accent)}
+.btn-pill.whats{background:var(--whatsapp); color:#ffffff}
+.btn-pill:active{transform:scale(.97)}
 
 .empty-city-msg{font-size:14px;color:var(--muted);padding:4px 2px}
 
@@ -501,6 +555,14 @@ footer p{font-size:12.5px;color:var(--muted);line-height:1.6}
 </header>
 
 <main class="gutter">
+  <div class="attn-banner">
+    <span class="attn-ico">📣</span>
+    <div>
+      <h2>Seu local pode ter mudado</h2>
+      <p>O TSE remanejou seções eleitorais em todo o país. É rapidinho: procure sua cidade abaixo e confira antes de sair de casa — depois manda pra família no WhatsApp.</p>
+    </div>
+  </div>
+
   <div class="sticky-city" id="stickyCity">
     <span class="label"><span id="stickyCityName">—</span> <span class="uf" id="stickyCityUf"></span></span>
     <button type="button" id="stickyChangeBtn">Trocar cidade</button>
@@ -601,6 +663,15 @@ footer p{font-size:12.5px;color:var(--muted);line-height:1.6}
   function mapsUrl(end, cep, municipio, uf){
     var q = [end, cep ? ('CEP ' + cep) : '', municipio, uf].filter(Boolean).join(', ');
     return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+  }
+
+  function whatsappUrl(cityObj, card){
+    var msg = '🗳️ *Seu local de votação em ' + cityObj.m + '/' + cityObj.uf + ' pode ter mudado!*\n\n' +
+      'Zona ' + card.z + (card.s.length > 1 ? (', Seções ' + card.s.join(', ')) : (', Seção ' + card.s[0])) + '\n' +
+      '📍 Novo local: ' + card.a + ' — ' + card.e + (card.c ? (', CEP ' + card.c) : '') + '\n' +
+      '↩️ Local anterior: ' + card.an + '\n\n' +
+      'Confira a sua: ' + location.href;
+    return 'https://wa.me/?text=' + encodeURIComponent(msg);
   }
 
   function escapeHtml(s){
@@ -748,7 +819,7 @@ footer p{font-size:12.5px;color:var(--muted);line-height:1.6}
       var tagRow = document.createElement('div');
       tagRow.className = 'tag-row';
       var zChip = document.createElement('span');
-      zChip.className = 'chip';
+      zChip.className = 'chip solid';
       zChip.textContent = 'ZONA ' + card.z;
       tagRow.appendChild(zChip);
       var sChip = document.createElement('span');
@@ -764,19 +835,32 @@ footer p{font-size:12.5px;color:var(--muted);line-height:1.6}
         '<div class="addr">' + escapeHtml(card.e) + (card.c ? (' · CEP ' + escapeHtml(card.c)) : '') + '</div>';
       el.appendChild(novo);
 
-      var link = document.createElement('a');
-      link.className = 'maplink';
-      link.href = mapsUrl(card.e, card.c, cityObj.m, cityObj.uf);
-      link.target = '_blank';
-      link.rel = 'noopener';
-      link.textContent = '📍 Ver no mapa';
-      el.appendChild(link);
-
       var antigo = document.createElement('div');
       antigo.className = 'block antigo';
       antigo.style.marginTop = '10px';
       antigo.innerHTML = '<span class="block-lbl">Local anterior</span>' + escapeHtml(card.an);
       el.appendChild(antigo);
+
+      var actionRow = document.createElement('div');
+      actionRow.className = 'action-row';
+
+      var link = document.createElement('a');
+      link.className = 'btn-pill maps';
+      link.href = mapsUrl(card.e, card.c, cityObj.m, cityObj.uf);
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.textContent = '📍 Ver no mapa';
+      actionRow.appendChild(link);
+
+      var waLink = document.createElement('a');
+      waLink.className = 'btn-pill whats';
+      waLink.href = whatsappUrl(cityObj, card);
+      waLink.target = '_blank';
+      waLink.rel = 'noopener';
+      waLink.innerHTML = '📲 Avisar no WhatsApp';
+      actionRow.appendChild(waLink);
+
+      el.appendChild(actionRow);
 
       changeList.appendChild(el);
 
