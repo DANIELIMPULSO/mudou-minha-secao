@@ -714,7 +714,12 @@ footer p{font-size:12.5px;color:var(--muted);line-height:1.6}
   citySearch.addEventListener('input', function(){ updateFiltered(); openList(); });
   citySearch.addEventListener('keydown', function(e){
     if (!cityListbox.classList.contains('show') && (e.key === 'ArrowDown' || e.key === 'ArrowUp')){
-      openList(); return;
+      e.preventDefault();
+      updateFiltered();
+      openList();
+      activeIdx = filtered.length ? 0 : -1;
+      renderOptions();
+      return;
     }
     if (e.key === 'ArrowDown'){
       e.preventDefault();
@@ -729,6 +734,7 @@ footer p{font-size:12.5px;color:var(--muted);line-height:1.6}
     } else if (e.key === 'Enter'){
       e.preventDefault();
       if (activeIdx >= 0 && filtered[activeIdx]) selectCity(filtered[activeIdx]);
+      else if (filtered.length) selectCity(filtered[0]);
     } else if (e.key === 'Escape'){
       closeList();
     }
