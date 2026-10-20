@@ -40,32 +40,8 @@
   --radius-md:16px;
   color-scheme:light;
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#192635;
-    --surface:#22334a;
-    --surface-2:#293d57;
-    --fg:#f2f7fc;
-    --muted:#aec0d3;
-    --border:#3c5370;
-    --accent:#7fc1f5;
-    --accent-2:#6fe0ae;
-    --accent-ink:#0b1824;
-    --alert:#ffa89e;
-    --alert-bg:#3a2320;
-    --alert-border:#6b332c;
-    --success:#8fe6b9;
-    --success-bg:#1b3a2d;
-    --success-border:#2d5c46;
-    --chip-bg:#2c3f57;
-    --amber:#ffc266;
-    --amber-bg:#3a2d10;
-    --amber-border:#5c461a;
-    --whatsapp:#3fcd7a;
-    --shadow:0 1px 2px rgba(0,0,0,.25), 0 10px 28px -14px rgba(0,0,0,.55);
-    color-scheme:dark;
-  }
-}
+/* Committed to a single light look per explicit request: no auto dark-mode
+   switch. :root[data-theme="dark"] stays only for a host that forces it. */
 :root[data-theme="dark"]{
   --bg:#192635;
   --surface:#22334a;
