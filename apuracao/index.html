@@ -100,6 +100,22 @@ button:hover{background:rgba(255,210,63,.1)}
 .pc{font:400 clamp(28px,8vw,46px)/1 var(--display);font-variant-numeric:tabular-nums}
 .score.l .pc{color:var(--p1);text-shadow:0 0 14px var(--p1)}
 .score.r .pc{color:var(--p2);text-shadow:0 0 14px var(--p2)}
+.cand{font:400 clamp(14px,4vw,20px)/1.1 var(--display);letter-spacing:.02em}
+.score.l .cand{color:var(--p1)} .score.r .cand{color:var(--p2)}
+/* Quando Flávio lidera: ele vai para a esquerda e as cores trocam de lado */
+body.inv .n1{order:3;text-align:left} body.inv .n2{order:1;text-align:right} body.inv .vsmark{order:2}
+body.inv .fill.l{background:repeating-linear-gradient(90deg,var(--p2) 0 14px,var(--p2d) 14px 18px);box-shadow:0 0 18px var(--p2)}
+body.inv .fill.r{background:repeating-linear-gradient(270deg,var(--p1) 0 14px,var(--p1d) 14px 18px);box-shadow:0 0 18px var(--p1)}
+body.inv .score.l .pc,body.inv .score.l .cand{color:var(--p2);text-shadow:0 0 14px var(--p2)}
+body.inv .score.r .pc,body.inv .score.r .cand{color:var(--p1);text-shadow:0 0 14px var(--p1)}
+@media (max-width:560px){ body.inv .n1,body.inv .n2{text-align:center} }
+/* Glow piscando em quem está ganhando (sempre o da esquerda) */
+@keyframes glowV{0%,100%{filter:drop-shadow(0 0 0 transparent) brightness(1)}50%{filter:drop-shadow(0 0 14px var(--p1)) drop-shadow(0 0 28px var(--p1)) brightness(1.35)}}
+@keyframes glowA{0%,100%{filter:drop-shadow(0 0 0 transparent) brightness(1)}50%{filter:drop-shadow(0 0 14px var(--p2)) drop-shadow(0 0 28px var(--p2)) brightness(1.35)}}
+body.lead:not(.inv) .n1, body.lead:not(.inv) .fill.l, body.lead:not(.inv) .score.l{animation:glowV 1s ease-in-out infinite}
+body.lead.inv .n2, body.lead.inv .fill.l, body.lead.inv .score.l{animation:glowA 1s ease-in-out infinite}
+body.lead:not(.inv) .n1{animation:inL .6s cubic-bezier(.2,1.4,.4,1) both,glowV 1s .6s ease-in-out infinite}
+body.lead.inv .n2{animation:inR .6s cubic-bezier(.2,1.4,.4,1) both,glowA 1s .6s ease-in-out infinite}
 .votes{font:400 14px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
 .note{font-size:13px;color:var(--muted);text-align:center;max-width:60ch;margin:0 auto}
 .winner{text-align:center;font:400 clamp(20px,6vw,36px)/1.1 var(--display);color:var(--gold);text-shadow:0 0 18px var(--gold)}
@@ -107,8 +123,13 @@ button:hover{background:rgba(255,210,63,.1)}
 /* Urnas apuradas como barra de energia */
 .hp{padding:14px 16px;display:grid;gap:8px}
 .hp .row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font:400 12px var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
-.scopename{font:400 clamp(20px,5vw,28px)/1 var(--display);color:var(--fg);letter-spacing:.02em}
-.soundbtn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:16px;z-index:10;box-shadow:0 0 14px rgba(255,210,63,.4);background:#0c0b16}
+.scopebox{display:grid;justify-items:center;gap:6px;padding:14px 16px;text-align:center}
+.scopelbl{font:400 12px var(--mono);letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+.scopename{font:400 clamp(28px,8vw,46px)/1 var(--display);color:var(--gold);text-shadow:0 0 18px rgba(255,210,63,.6);text-transform:uppercase;letter-spacing:.02em;text-wrap:balance}
+.scopename.pop{animation:pop .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(1.35);opacity:.3}}
+#uf{border-color:var(--gold);color:var(--gold);font-weight:700}
+.soundbtn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:10;font-size:16px;padding:12px 18px;box-shadow:0 0 18px rgba(255,210,63,.6);background:#1a1606;animation:blink 1.2s infinite}
 .hp .num{font:400 22px var(--display);color:var(--gold)}
 .hpbar{height:12px;border-radius:6px;background:#0a0914;border:1px solid var(--line);overflow:hidden}
 .hpbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#00ff6a,#ffe600,#ff9a00);transition:width 1s}
@@ -143,6 +164,11 @@ footer a{color:var(--gold)}
     </div>
   </section>
 
+  <div class="scopebox rgb" aria-live="polite">
+    <span class="scopelbl">📍 Resultado de</span>
+    <span class="scopename" id="scopeName">Brasil</span>
+  </div>
+
   <div class="bar">
     <div class="status"><span class="dot" id="dot"></span><span id="status">aguardando</span></div>
     <div class="controls">
@@ -152,7 +178,6 @@ footer a{color:var(--gold)}
   </div>
 
   <section class="rgb hp">
-    <div class="scopename" id="scopeName">Brasil</div>
     <div class="row"><span>Seções apuradas</span><span id="hora">—</span></div>
     <div class="num" id="pst">0,00%</div>
     <div class="hpbar"><i id="pstbar"></i></div>
@@ -169,8 +194,8 @@ footer a{color:var(--gold)}
       </div>
     </div>
     <div class="scores">
-      <div class="score l"><div class="pc" id="pcL">0,00%</div><div class="votes" id="vL">0 votos</div></div>
-      <div class="score r"><div class="pc" id="pcR">0,00%</div><div class="votes" id="vR">0 votos</div></div>
+      <div class="score l"><div class="cand" id="nmL">LULA</div><div class="pc" id="pcL">0,00%</div><div class="votes" id="vL">0 votos</div></div>
+      <div class="score r"><div class="cand" id="nmR">FLÁVIO BOLSONARO</div><div class="pc" id="pcR">0,00%</div><div class="votes" id="vR">0 votos</div></div>
     </div>
     <div class="winner" id="winner" hidden></div>
     <p class="note">A barra de cada lutador é o quanto ele já tem dos votos de que precisa para vencer: metade dos votos válidos, considerando a apuração completa. O centro é a maioria. O percentual mostrado é dos votos válidos apurados até agora.</p>
@@ -241,7 +266,8 @@ async function carregar(){
     if (!codigo) codigo = "6258";
     try{ localStorage.setItem("ele-codigo-2026", codigo); }catch(e){}
     const e = codigo.padStart(6,"0"), uf = $("uf").value;
-    $("scopeName").textContent = $("uf").selectedOptions[0]?.textContent || uf.toUpperCase();
+    const sn = $("scopeName"), novoNome = $("uf").selectedOptions[0]?.textContent || uf.toUpperCase();
+    if (sn.textContent !== novoNome){ sn.textContent = novoNome; sn.classList.remove("pop"); void sn.offsetWidth; sn.classList.add("pop"); }
     const url = `${BASE}/ele${ANO}/${parseInt(codigo,10)}/dados/${uf}/${uf}-c0001-e${e}-u.json`;
     const r = await fetch(url, {cache:"no-store"});
     if (r.status === 404 || r.status === 403){ render(null); showMsg("O TSE ainda não publicou este arquivo. Se já passou das 17h, confira o código da eleição em Configuração avançada."); setStatus("aguardando"); return; }
@@ -256,7 +282,7 @@ async function carregar(){
 
 function render(d){
   const zero = () => { ["fillL","fillR"].forEach(i=>$(i).style.width="0"); $("pcL").textContent=$("pcR").textContent="0,00%"; $("vL").textContent=$("vR").textContent="0 votos"; };
-  if (!d){ zero(); $("pst").textContent="0,00%"; $("pstbar").style.width="0"; $("hora").textContent="—"; $("winner").hidden=true; $("trophy").classList.remove("won"); return; }
+  if (!d){ zero(); $("pst").textContent="0,00%"; $("pstbar").style.width="0"; $("hora").textContent="—"; $("winner").hidden=true; $("trophy").classList.remove("won"); document.body.classList.remove("lead","inv"); $("nmL").textContent="LULA"; $("nmR").textContent="FLÁVIO BOLSONARO"; return; }
   showMsg("");
   const pst = num(d.pst);
   $("pst").textContent = pct(d.pst) + "%";
@@ -270,7 +296,13 @@ function render(d){
   // Avanço até o centro: fração dos votos necessários para a maioria, projetada para 100% das seções
   const avance = c => c ? Math.min(1, (num(c.pvap)/100) * (pst/100) * 2) : 0;
   const eleito = c => c && (String(c.e).toLowerCase()==="s" || /^eleito/i.test(c.st||""));
-  [[L,"L"],[R,"R"]].forEach(([c,k])=>{
+  const flavioLidera = R && L && num(R.pvap) > num(L.pvap);
+  document.body.classList.toggle("inv", !!flavioLidera);
+  document.body.classList.toggle("lead", !!(L && R && num(L.pvap) !== num(R.pvap)));
+  const esq = flavioLidera ? R : L, dir = flavioLidera ? L : R;
+  $("nmL").textContent = flavioLidera ? "FLÁVIO BOLSONARO" : "LULA";
+  $("nmR").textContent = flavioLidera ? "LULA" : "FLÁVIO BOLSONARO";
+  [[esq,"L"],[dir,"R"]].forEach(([c,k])=>{
     $("fill"+k).style.width = (avance(c)*50) + "%";
     $("pc"+k).textContent = pct(c ? c.pvap : 0) + "%";
     $("v"+k).textContent = num(c ? c.vap : 0).toLocaleString("pt-BR") + " votos";
@@ -289,63 +321,68 @@ carregar();
 setInterval(carregar, 30000);
 
 
-// Trilha de ação original (sintetizada, 10s) ao carregar a página
+// Trilha de ação original (10s): gerada como áudio WAV e tocada por <audio>, que funciona no celular
 (function(){
-  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
-  let tocou = false;
-  const btn = document.createElement("button"); btn.className = "soundbtn"; btn.textContent = "▶ Trilha"; btn.hidden = true;
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext; if (!OAC) return;
+  try{ if (navigator.audioSession) navigator.audioSession.type = "playback"; }catch(e){} // toca mesmo no modo silencioso do iPhone
+  const audio = new Audio(); audio.preload = "auto"; audio.setAttribute("playsinline","");
+  const btn = document.createElement("button"); btn.className = "soundbtn"; btn.textContent = "🔊 Tocar trilha"; btn.hidden = true;
   document.body.appendChild(btn);
-  function tocar(){
-    if (tocou) return; tocou = true; btn.hidden = true;
-    const ctx = new AC(); ctx.resume();
-    const t0 = ctx.currentTime + 0.05, BPM = 150, b = 60/BPM, s = b/4, FIM = t0 + 10;
+  let pronto = false, tocou = false;
+
+  function gerar(){
+    const SR = 44100, DUR = 10, ctx = new OAC(1, SR*DUR, SR);
+    const t0 = 0.02, BPM = 150, b = 60/BPM, s = b/4, FIM = DUR - 0.02;
     const mestre = ctx.createGain(); mestre.gain.setValueAtTime(0.0001, t0);
     mestre.gain.exponentialRampToValueAtTime(0.5, t0 + 0.05);
     mestre.gain.setValueAtTime(0.5, FIM - 1.2); mestre.gain.exponentialRampToValueAtTime(0.0001, FIM);
     mestre.connect(ctx.destination);
     const f = m => 440 * Math.pow(2, (m - 69)/12);
-    function nota(m, t, d, tipo, vol){
-      if (t >= FIM) return;
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = tipo; o.frequency.setValueAtTime(f(m), t);
+    function nota(m, t, d, tipo, vol){ if (t >= FIM) return;
+      const o = ctx.createOscillator(), g = ctx.createGain(); o.type = tipo; o.frequency.setValueAtTime(f(m), t);
       g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
-      o.connect(g); g.connect(mestre); o.start(t); o.stop(t + d + 0.02);
-    }
+      o.connect(g); g.connect(mestre); o.start(t); o.stop(Math.min(t + d + 0.02, DUR)); }
     function bumbo(t){ const o=ctx.createOscillator(), g=ctx.createGain(); o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(40,t+.12);
-      g.gain.setValueAtTime(.9,t); g.gain.exponentialRampToValueAtTime(.0001,t+.18); o.connect(g); g.connect(mestre); o.start(t); o.stop(t+.2); }
-    const ruido = ctx.createBuffer(1, ctx.sampleRate*.2, ctx.sampleRate), dd = ruido.getChannelData(0);
+      g.gain.setValueAtTime(.9,t); g.gain.exponentialRampToValueAtTime(.0001,t+.18); o.connect(g); g.connect(mestre); o.start(t); o.stop(Math.min(t+.2,DUR)); }
+    const ruido = ctx.createBuffer(1, SR*.2, SR), dd = ruido.getChannelData(0);
     for (let i=0;i<dd.length;i++) dd[i] = Math.random()*2-1;
     function caixa(t, vol, dur){ const n=ctx.createBufferSource(), h=ctx.createBiquadFilter(), g=ctx.createGain(); n.buffer=ruido;
       h.type="highpass"; h.frequency.value=1800; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-      n.connect(h); h.connect(g); g.connect(mestre); n.start(t); n.stop(t+dur); }
-    // Progressão em Mi menor: Em – C – D – B (2 compassos cada acorde a cada volta)
-    const raiz = [40, 36, 38, 35];
-    const melodia = [64,67,71,72, 71,67,64,62, 64,67,71,74, 76,74,71,67];
-    const compasso = 4*b;
-    for (let c = 0; c*compasso < 10; c++){
-      const tc = t0 + c*compasso, r = raiz[Math.floor(c/1)%4];
-      for (let i=0;i<16;i++){ // baixo galopante em semicolcheias
-        const t = tc + i*s; nota(r + (i%4===3?12:0), t, s*.9, "sawtooth", .22);
-        if (i%2===0) caixa(t, .08, .03);
-      }
-      [0,1,2,3].forEach(k=>{ const t=tc+k*b; if (k%2===0) bumbo(t); else caixa(t,.5,.15); });
-      if (c >= 2){ // melodia entra no 3º compasso
-        for (let i=0;i<4;i++){ const m = melodia[((c-2)*4+i)%16]; nota(m, tc+i*b, b*.85, "square", .12); nota(m+12, tc+i*b, b*.4, "triangle", .05); }
-      }
+      n.connect(h); h.connect(g); g.connect(mestre); n.start(t); n.stop(Math.min(t+dur,DUR)); }
+    const raiz = [40, 36, 38, 35], melodia = [64,67,71,72, 71,67,64,62, 64,67,71,74, 76,74,71,67], compasso = 4*b;
+    for (let c = 0; t0 + c*compasso < FIM; c++){
+      const tc = t0 + c*compasso, r = raiz[c%4];
+      for (let i=0;i<16;i++){ const t = tc + i*s; nota(r + (i%4===3?12:0), t, s*.9, "sawtooth", .22); if (i%2===0) caixa(t, .08, .03); }
+      [0,1,2,3].forEach(k=>{ const t=tc+k*b; if (t>=FIM) return; if (k%2===0) bumbo(t); else caixa(t,.5,.15); });
+      if (c >= 2) for (let i=0;i<4;i++){ const m = melodia[((c-2)*4+i)%16]; nota(m, tc+i*b, b*.85, "square", .12); nota(m+12, tc+i*b, b*.4, "triangle", .05); }
     }
-    caixa(FIM-0.4, .6, .4); bumbo(FIM-0.4); nota(40, FIM-0.4, .4, "sawtooth", .3);
+    return ctx.startRendering ? new Promise(res=>{ const pr = ctx.startRendering(); if (pr && pr.then) pr.then(res); else ctx.oncomplete = e=>res(e.renderedBuffer); }) : null;
   }
-  // Tenta tocar ao carregar; se o navegador bloquear o som automático, toca no primeiro toque/clique
-  try{
-    const teste = new AC();
-    if (teste.state === "running"){ teste.close(); tocar(); }
-    else { teste.close(); btn.hidden = false;
-      const primeiro = () => { tocar(); ["pointerdown","keydown"].forEach(ev=>removeEventListener(ev, primeiro)); };
-      ["pointerdown","keydown"].forEach(ev=>addEventListener(ev, primeiro));
-      setTimeout(()=>{ if(!tocou) btn.hidden = true; }, 20000);
-    }
-  }catch(e){}
-  btn.addEventListener("click", tocar);
+  function wav(buf){
+    const d = buf.getChannelData(0), n = d.length, ab = new ArrayBuffer(44 + n*2), v = new DataView(ab);
+    const w = (o,str)=>{ for(let i=0;i<str.length;i++) v.setUint8(o+i,str.charCodeAt(i)); };
+    w(0,"RIFF"); v.setUint32(4,36+n*2,true); w(8,"WAVE"); w(12,"fmt "); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+    v.setUint32(24,buf.sampleRate,true); v.setUint32(28,buf.sampleRate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,"data"); v.setUint32(40,n*2,true);
+    for (let i=0;i<n;i++){ const x = Math.max(-1,Math.min(1,d[i])); v.setInt16(44+i*2, x<0?x*0x8000:x*0x7fff, true); }
+    return new Blob([ab],{type:"audio/wav"});
+  }
+  function tocar(){
+    if (tocou || !pronto) return;
+    audio.currentTime = 0;
+    const p = audio.play();
+    if (p && p.then) p.then(()=>{ tocou = true; btn.hidden = true; limpar(); }).catch(()=>{ btn.hidden = false; });
+    else { tocou = true; btn.hidden = true; limpar(); }
+  }
+  const eventos = ["touchend","click","keydown"];
+  const noToque = () => tocar();
+  function limpar(){ eventos.forEach(ev=>document.removeEventListener(ev, noToque, true)); }
+  btn.addEventListener("click", e=>{ e.stopPropagation(); tocar(); });
+  const pr = gerar();
+  if (pr) pr.then(buf=>{
+    audio.src = URL.createObjectURL(wav(buf)); pronto = true;
+    eventos.forEach(ev=>document.addEventListener(ev, noToque, true)); // 1º toque em qualquer lugar toca, se o navegador bloquear o automático
+    tocar();
+  }).catch(()=>{});
 })();
 
 // Cenário em pixel art (240x105, ampliado sem suavizar)
