@@ -116,6 +116,21 @@ body.lead:not(.inv) .n1, body.lead:not(.inv) .fill.l, body.lead:not(.inv) .score
 body.lead.inv .n2, body.lead.inv .fill.l, body.lead.inv .score.l{animation:glowA 1s ease-in-out infinite}
 body.lead:not(.inv) .n1{animation:inL .6s cubic-bezier(.2,1.4,.4,1) both,glowV 1s .6s ease-in-out infinite}
 body.lead.inv .n2{animation:inR .6s cubic-bezier(.2,1.4,.4,1) both,glowA 1s .6s ease-in-out infinite}
+/* Luta em pixel art com barras de vida */
+.fight{padding:14px 14px 0;display:grid;gap:8px;overflow:hidden}
+.hud{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+.life{display:grid;gap:4px;min-width:0}
+.life .lname{font:400 clamp(12px,3.6vw,16px)/1 var(--display);letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.life.r{text-align:right}
+.lbar{height:16px;border:2px solid #fff;background:#3a0a10;position:relative;box-shadow:0 0 0 2px #000;transform:skewX(-14deg)}
+.life.r .lbar{transform:skewX(14deg)}
+.lbar i{position:absolute;top:0;bottom:0;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.life.l .lbar i{right:0} .life.r .lbar i{left:0}
+.lbar i::after{content:"";position:absolute;left:0;right:0;top:0;height:35%;background:rgba(255,255,255,.35)}
+.lpc{font:400 13px var(--mono);color:var(--muted)}
+.timer{font:400 clamp(18px,5vw,26px)/1 var(--display);color:var(--gold);border:2px solid var(--gold);padding:6px 8px;background:#000;text-align:center;min-width:64px}
+.timer small{display:block;font:400 9px var(--mono);letter-spacing:.12em;color:var(--muted);margin-top:3px}
+#luta{display:block;width:100%;height:auto;aspect-ratio:160/62;image-rendering:pixelated}
 .votes{font:400 14px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
 .note{font-size:13px;color:var(--muted);text-align:center;max-width:60ch;margin:0 auto}
 .winner{text-align:center;font:400 clamp(20px,6vw,36px)/1.1 var(--display);color:var(--gold);text-shadow:0 0 18px var(--gold)}
@@ -170,6 +185,15 @@ footer a{color:var(--gold)}
     <span class="scopelbl">📍 Resultado de</span>
     <span class="scopename" id="scopeName">Brasil</span>
   </div>
+
+  <section class="rgb fight" aria-label="Luta">
+    <div class="hud">
+      <div class="life l"><div class="lname" id="lfNmL">LULA</div><div class="lbar"><i id="lfL" style="width:0"></i></div><div class="lpc" id="lfPcL">0,00%</div></div>
+      <div class="timer" id="lfT">0%<small>APURADO</small></div>
+      <div class="life r"><div class="lname" id="lfNmR">FLÁVIO</div><div class="lbar"><i id="lfR" style="width:0"></i></div><div class="lpc" id="lfPcR">0,00%</div></div>
+    </div>
+    <canvas id="luta" width="160" height="62" role="img" aria-label="Dois lutadores em pixel art representando os candidatos"></canvas>
+  </section>
 
   <div class="bar">
     <div class="status"><span class="dot" id="dot"></span><span id="status">aguardando</span></div>
@@ -284,7 +308,7 @@ async function carregar(){
 
 function render(d){
   const zero = () => { ["fillL","fillR"].forEach(i=>$(i).style.width="0"); $("pcL").textContent=$("pcR").textContent="0,00%"; $("vL").textContent=$("vR").textContent="0 votos"; };
-  if (!d){ zero(); $("pst").textContent="0,00%"; $("pstbar").style.width="0"; $("hora").textContent="—"; $("winner").hidden=true; $("trophy").classList.remove("won"); document.body.classList.remove("lead","inv"); $("nmL").textContent="LULA"; $("nmR").textContent="FLÁVIO BOLSONARO"; return; }
+  if (!d){ zero(); $("pst").textContent="0,00%"; $("pstbar").style.width="0"; $("hora").textContent="—"; $("winner").hidden=true; $("trophy").classList.remove("won"); document.body.classList.remove("lead","inv"); $("nmL").textContent="LULA"; $("nmR").textContent="FLÁVIO BOLSONARO"; window.luta && luta(null); return; }
   showMsg("");
   const pst = num(d.pst);
   $("pst").textContent = pct(d.pst) + "%";
@@ -301,6 +325,7 @@ function render(d){
   const flavioLidera = R && L && num(R.pvap) > num(L.pvap);
   document.body.classList.toggle("inv", !!flavioLidera);
   document.body.classList.toggle("lead", !!(L && R && num(L.pvap) !== num(R.pvap)));
+  window.luta && luta({L, R, inv: !!flavioLidera, pst});
   const esq = flavioLidera ? R : L, dir = flavioLidera ? L : R;
   $("nmL").textContent = flavioLidera ? "FLÁVIO BOLSONARO" : "LULA";
   $("nmR").textContent = flavioLidera ? "LULA" : "FLÁVIO BOLSONARO";
@@ -341,6 +366,89 @@ setInterval(carregar, 30000);
   btn.addEventListener("click", tocar);
   btn.hidden = false;
   tocar(); // tenta sozinho ao abrir (funciona onde o navegador permite)
+})();
+
+// Lutadores em pixel art (desenhados por código) com barras de vida = % dos votos válidos
+(function(){
+  const cv=$("luta"), g=cv.getContext("2d"), W=160, H=62;
+  const C={k:"#140c1c"};
+  const LULA={nome:"LULA", hair:"#d8d8e0", hairD:"#a9a9b6", beard:"#c9c9d3", skin:"#d9a070", skinD:"#b47c52", top:"#3b3e4c", topD:"#262833", detail:"#ffffff", tie:"#e02b3a", tieD:"#8f1420", pants:"#2b2e3a", pantsD:"#1b1d26", shoe:"#2a1a10", star:true, cor:"#ff2a3d", corD:"#a8101f"};
+  const FLAVIO={nome:"FLÁVIO", hair:"#2a1d14", hairD:"#160f0a", beard:null, skin:"#f0c49a", skinD:"#cf9a6e", top:"#1f3f9e", topD:"#132a6e", detail:"#ffffff", tie:"#ffd23f", tieD:"#b8901c", pants:"#16224f", pantsD:"#0d1533", shoe:"#111", star:false, cor:"#2a7bff", corD:"#0f3fae"};
+  // desenha um lutador virado para a direita num canvas 24x40 (1px = 1 pixel do sprite)
+  function sprite(f, pose, bob){
+    const c=document.createElement("canvas"); c.width=26; c.height=42; const x=c.getContext("2d");
+    const R=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b+bob,w,h)};
+    const y0=2;
+    // pernas em base de luta
+    R(6,y0+26,4,9,f.pants); R(6,y0+26,1,9,f.pantsD); R(14,y0+26,4,9,f.pants); R(17,y0+26,1,9,f.pantsD);
+    R(5,y0+35,6,3,f.shoe); R(14,y0+35,7,3,f.shoe);
+    R(6,y0+24,12,4,f.pants);
+    // tronco
+    R(5,y0+13,14,12,f.top); R(5,y0+13,2,12,f.topD); R(5,y0+23,14,2,f.topD);
+    if (f.tie){ R(10,y0+13,4,6,f.detail); R(11,y0+14,2,8,f.tie); R(11,y0+22,2,1,f.tieD); }
+    // braço de trás (guarda)
+    R(3,y0+14,3,7,f.top); R(3,y0+20,3,3,f.skin);
+    // broche no peito: estrela vermelha (Lula) ou arminha (Flávio)
+    if (f.star){ const sx=5,sy=y0+16, c1="#ff2a3d"; ["..x..","xxxxx",".xxx.",".x.x.","x...x"].forEach((row,j)=>[...row].forEach((ch,i)=>{ if(ch==="x") R(sx+i,sy+j,1,1,c1); })); }
+    else { const sx=5,sy=y0+16, c1="#e6e9f0", c2="#8a8f9c"; R(sx,sy,5,2,c1); R(sx,sy+1,5,1,c2); R(sx,sy+2,2,2,c1); R(sx+2,sy+2,1,1,c2); R(sx+4,sy-1,1,1,c1); }
+    // cabeça
+    R(8,y0+3,10,10,f.skin); R(8,y0+3,2,10,f.skinD); R(17,y0+7,2,2,f.skin);
+    R(7,y0+1,11,3,f.hair); R(7,y0+3,3,4,f.hair); R(7,y0+1,11,1,f.hairD);
+    if (f===FLAVIO){ R(14,y0+2,4,2,f.hair); }
+    R(15,y0+6,1,2,C.k); R(12,y0+6,1,2,C.k);  // olhos
+    R(12,y0+5,2,1,f.hairD); R(15,y0+5,2,1,f.hairD); // sobrancelhas
+    if (f.beard){ R(9,y0+9,9,4,f.beard); R(10,y0+13,7,1,f.beard); R(13,y0+10,3,1,"#7a3a2a"); }
+    else { R(13,y0+10,3,1,"#9a4a3a"); }
+    R(11,y0+13,4,1,f.skinD); // pescoço
+    // braço da frente: guarda ou soco
+    if (pose==="soco"){ R(17,y0+14,7,3,f.top); R(23,y0+13,3,4,f.skin); R(25,y0+14,1,2,f.skinD); }
+    else if (pose==="vitoria"){ R(16,y0+4,3,10,f.top); R(16,y0+0,3,4,f.skin); }
+    else { R(16,y0+14,3,5,f.top); R(17,y0+11,4,4,f.skin); R(20,y0+12,1,2,f.skinD); }
+    // contorno escuro em volta do desenho
+    const im=x.getImageData(0,0,26,42), d=im.data, o=new Uint8ClampedArray(d);
+    for(let yy=0;yy<42;yy++) for(let xx=0;xx<26;xx++){ const i=(yy*26+xx)*4; if(d[i+3]) continue;
+      const viz=[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>{const X=xx+a,Y=yy+b; return X>=0&&Y>=0&&X<26&&Y<42&&d[(Y*26+X)*4+3]}); if(viz){o[i]=20;o[i+1]=12;o[i+2]=28;o[i+3]=255;} }
+    x.putImageData(new ImageData(o,26,42),0,0);
+    return c;
+  }
+  let est={esq:LULA,dir:FLAVIO,lead:false}, t=0, hitE=0, hitD=0;
+  window.luta=function(info){
+    const nmE=$("lfNmL"), nmD=$("lfNmR");
+    if (!info){ est={esq:LULA,dir:FLAVIO,lead:false}; $("lfL").style.width=$("lfR").style.width="0"; $("lfPcL").textContent=$("lfPcR").textContent="0,00%"; $("lfT").firstChild.nodeValue="0%"; nmE.textContent="LULA"; nmD.textContent="FLÁVIO"; pintar(); return; }
+    const {L,R,inv,pst}=info, e=inv?R:L, dd=inv?L:R;
+    est={esq:inv?FLAVIO:LULA, dir:inv?LULA:FLAVIO, lead: !!(L&&R&&num(L.pvap)!==num(R.pvap))};
+    nmE.textContent=est.esq.nome; nmD.textContent=est.dir.nome;
+    [[e,"L",est.esq],[dd,"R",est.dir]].forEach(([c,k,f])=>{ const v=c?num(c.pvap):0; const b=$("lf"+k);
+      b.style.width=Math.min(100,v)+"%"; b.style.background=`linear-gradient(180deg,${f.cor},${f.corD})`; $("lfPc"+k).textContent=pct(v)+"%";
+      $("lfNm"+k).style.color=f.cor; });
+    $("lfT").firstChild.nodeValue=Math.floor(num(pst))+"%";
+  };
+  function chao(){
+    g.fillStyle="#0a0914"; g.fillRect(0,0,W,H);
+    for(let i=0;i<5;i++){ g.fillStyle=["#1a1030","#221338","#2c1640","#381a48","#46204e"][i]; g.fillRect(0,i*6,W,6); }
+    g.fillStyle="#120a20"; [[4,14,10],[16,8,16],[34,12,9],[46,6,14],[62,10,12],[76,4,10],[88,9,15],[105,5,12],[119,11,10],[131,7,14],[147,12,13]].forEach(([x,y,w])=>g.fillRect(x,y,w,30-y));
+    g.fillStyle="#2a2532"; g.fillRect(0,48,W,14); g.fillStyle="#6b6474"; g.fillRect(0,47,W,1);
+    for(let x=0;x<W;x+=12){ g.fillStyle="#342e3d"; g.fillRect(x+(t|0)%2,54,6,1); }
+  }
+  function pintar(){
+    chao();
+    const fase=(t/10)|0, bob=fase%2;
+    const golpeE = est.lead && (t%60)<6, golpeD = (t%90)>=45 && (t%90)<50;
+    const vitE = est.lead && (t%120)>=90;
+    const pe = golpeE?"soco":vitE?"vitoria":"guarda", pd = golpeD?"soco":"guarda";
+    const se=sprite(est.esq,pe,bob), sd=sprite(est.dir,pd,1-bob);
+    const xe=40, xd=94, y=8;
+    // sombra
+    g.fillStyle="rgba(0,0,0,.45)"; g.fillRect(xe+3,y+40,20,3); g.fillRect(xd+3,y+40,20,3);
+    // brilho piscando no líder
+    if (est.lead && Math.sin(t*.25)>0){ g.save(); g.shadowColor=est.esq.cor; g.shadowBlur=10; g.drawImage(se,xe,y); g.drawImage(se,xe,y); g.restore(); }
+    g.drawImage(se,xe,y);
+    g.save(); g.translate(xd+26,y); g.scale(-1,1); g.drawImage(sd,0,0); g.restore();
+    // faísca do soco
+    if (golpeE){ g.fillStyle="#fff4b0"; g.fillRect(xe+27,y+15,3,3); g.fillStyle="#ffd23f"; g.fillRect(xe+26,y+13,1,1); g.fillRect(xe+30,y+18,1,1); }
+  }
+  pintar();
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) setInterval(()=>{ t++; pintar(); }, 50);
 })();
 
 // Cenário em pixel art (240x105, ampliado sem suavizar)
