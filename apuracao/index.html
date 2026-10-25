@@ -107,6 +107,8 @@ button:hover{background:rgba(255,210,63,.1)}
 /* Urnas apuradas como barra de energia */
 .hp{padding:14px 16px;display:grid;gap:8px}
 .hp .row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font:400 12px var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.scopename{font:400 clamp(20px,5vw,28px)/1 var(--display);color:var(--fg);letter-spacing:.02em}
+.soundbtn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:16px;z-index:10;box-shadow:0 0 14px rgba(255,210,63,.4);background:#0c0b16}
 .hp .num{font:400 22px var(--display);color:var(--gold)}
 .hpbar{height:12px;border-radius:6px;background:#0a0914;border:1px solid var(--line);overflow:hidden}
 .hpbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#00ff6a,#ffe600,#ff9a00);transition:width 1s}
@@ -150,6 +152,7 @@ footer a{color:var(--gold)}
   </div>
 
   <section class="rgb hp">
+    <div class="scopename" id="scopeName">Brasil</div>
     <div class="row"><span>Seções apuradas</span><span id="hora">—</span></div>
     <div class="num" id="pst">0,00%</div>
     <div class="hpbar"><i id="pstbar"></i></div>
@@ -197,7 +200,8 @@ try { const salvo = localStorage.getItem("ele-codigo-2026"); if (salvo){ codigo 
 
 UFS.forEach(u => {
   const o = document.createElement("option");
-  o.value = u.toLowerCase(); o.textContent = u === "BR" ? "Brasil" : u === "ZZ" ? "Exterior" : u;
+  const NOMES = {BR:"Brasil",ZZ:"Exterior",AC:"Acre",AL:"Alagoas",AM:"Amazonas",AP:"Amapá",BA:"Bahia",CE:"Ceará",DF:"Distrito Federal",ES:"Espírito Santo",GO:"Goiás",MA:"Maranhão",MG:"Minas Gerais",MS:"Mato Grosso do Sul",MT:"Mato Grosso",PA:"Pará",PB:"Paraíba",PE:"Pernambuco",PI:"Piauí",PR:"Paraná",RJ:"Rio de Janeiro",RN:"Rio Grande do Norte",RO:"Rondônia",RR:"Roraima",RS:"Rio Grande do Sul",SC:"Santa Catarina",SE:"Sergipe",SP:"São Paulo",TO:"Tocantins"};
+  o.value = u.toLowerCase(); o.textContent = NOMES[u] || u;
   $("uf").appendChild(o);
 });
 
@@ -237,6 +241,7 @@ async function carregar(){
     if (!codigo) codigo = "6258";
     try{ localStorage.setItem("ele-codigo-2026", codigo); }catch(e){}
     const e = codigo.padStart(6,"0"), uf = $("uf").value;
+    $("scopeName").textContent = $("uf").selectedOptions[0]?.textContent || uf.toUpperCase();
     const url = `${BASE}/ele${ANO}/${parseInt(codigo,10)}/dados/${uf}/${uf}-c0001-e${e}-u.json`;
     const r = await fetch(url, {cache:"no-store"});
     if (r.status === 404 || r.status === 403){ render(null); showMsg("O TSE ainda não publicou este arquivo. Se já passou das 17h, confira o código da eleição em Configuração avançada."); setStatus("aguardando"); return; }
@@ -283,6 +288,65 @@ $("codeIn").addEventListener("change", ()=>{ codigo = $("codeIn").value.trim() |
 carregar();
 setInterval(carregar, 30000);
 
+
+// Trilha de ação original (sintetizada, 10s) ao carregar a página
+(function(){
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+  let tocou = false;
+  const btn = document.createElement("button"); btn.className = "soundbtn"; btn.textContent = "▶ Trilha"; btn.hidden = true;
+  document.body.appendChild(btn);
+  function tocar(){
+    if (tocou) return; tocou = true; btn.hidden = true;
+    const ctx = new AC(); ctx.resume();
+    const t0 = ctx.currentTime + 0.05, BPM = 150, b = 60/BPM, s = b/4, FIM = t0 + 10;
+    const mestre = ctx.createGain(); mestre.gain.setValueAtTime(0.0001, t0);
+    mestre.gain.exponentialRampToValueAtTime(0.5, t0 + 0.05);
+    mestre.gain.setValueAtTime(0.5, FIM - 1.2); mestre.gain.exponentialRampToValueAtTime(0.0001, FIM);
+    mestre.connect(ctx.destination);
+    const f = m => 440 * Math.pow(2, (m - 69)/12);
+    function nota(m, t, d, tipo, vol){
+      if (t >= FIM) return;
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = tipo; o.frequency.setValueAtTime(f(m), t);
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(g); g.connect(mestre); o.start(t); o.stop(t + d + 0.02);
+    }
+    function bumbo(t){ const o=ctx.createOscillator(), g=ctx.createGain(); o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(40,t+.12);
+      g.gain.setValueAtTime(.9,t); g.gain.exponentialRampToValueAtTime(.0001,t+.18); o.connect(g); g.connect(mestre); o.start(t); o.stop(t+.2); }
+    const ruido = ctx.createBuffer(1, ctx.sampleRate*.2, ctx.sampleRate), dd = ruido.getChannelData(0);
+    for (let i=0;i<dd.length;i++) dd[i] = Math.random()*2-1;
+    function caixa(t, vol, dur){ const n=ctx.createBufferSource(), h=ctx.createBiquadFilter(), g=ctx.createGain(); n.buffer=ruido;
+      h.type="highpass"; h.frequency.value=1800; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+      n.connect(h); h.connect(g); g.connect(mestre); n.start(t); n.stop(t+dur); }
+    // Progressão em Mi menor: Em – C – D – B (2 compassos cada acorde a cada volta)
+    const raiz = [40, 36, 38, 35];
+    const melodia = [64,67,71,72, 71,67,64,62, 64,67,71,74, 76,74,71,67];
+    const compasso = 4*b;
+    for (let c = 0; c*compasso < 10; c++){
+      const tc = t0 + c*compasso, r = raiz[Math.floor(c/1)%4];
+      for (let i=0;i<16;i++){ // baixo galopante em semicolcheias
+        const t = tc + i*s; nota(r + (i%4===3?12:0), t, s*.9, "sawtooth", .22);
+        if (i%2===0) caixa(t, .08, .03);
+      }
+      [0,1,2,3].forEach(k=>{ const t=tc+k*b; if (k%2===0) bumbo(t); else caixa(t,.5,.15); });
+      if (c >= 2){ // melodia entra no 3º compasso
+        for (let i=0;i<4;i++){ const m = melodia[((c-2)*4+i)%16]; nota(m, tc+i*b, b*.85, "square", .12); nota(m+12, tc+i*b, b*.4, "triangle", .05); }
+      }
+    }
+    caixa(FIM-0.4, .6, .4); bumbo(FIM-0.4); nota(40, FIM-0.4, .4, "sawtooth", .3);
+  }
+  // Tenta tocar ao carregar; se o navegador bloquear o som automático, toca no primeiro toque/clique
+  try{
+    const teste = new AC();
+    if (teste.state === "running"){ teste.close(); tocar(); }
+    else { teste.close(); btn.hidden = false;
+      const primeiro = () => { tocar(); ["pointerdown","keydown"].forEach(ev=>removeEventListener(ev, primeiro)); };
+      ["pointerdown","keydown"].forEach(ev=>addEventListener(ev, primeiro));
+      setTimeout(()=>{ if(!tocou) btn.hidden = true; }, 20000);
+    }
+  }catch(e){}
+  btn.addEventListener("click", tocar);
+})();
 
 // Cenário em pixel art (240x105, ampliado sem suavizar)
 (function(){
