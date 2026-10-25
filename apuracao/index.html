@@ -131,6 +131,9 @@ body.lead.inv .n2{animation:inR .6s cubic-bezier(.2,1.4,.4,1) both,glowA 1s .6s 
 .timer{font:400 clamp(18px,5vw,26px)/1 var(--display);color:var(--gold);border:2px solid var(--gold);padding:6px 8px;background:#000;text-align:center;min-width:64px}
 .timer small{display:block;font:400 9px var(--mono);letter-spacing:.12em;color:var(--muted);margin-top:3px}
 #luta{display:block;width:100%;height:auto;aspect-ratio:160/62;image-rendering:pixelated}
+.diff{display:grid;justify-items:center;gap:2px;text-align:center}
+.dlbl{font:400 12px var(--mono);letter-spacing:.25em;text-transform:uppercase;color:var(--muted)}
+.dnum{font:400 clamp(26px,7vw,40px)/1 var(--display);color:var(--gold);text-shadow:0 0 14px rgba(255,210,63,.55);font-variant-numeric:tabular-nums}
 .votes{font:400 14px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
 .note{font-size:13px;color:var(--muted);text-align:center;max-width:60ch;margin:0 auto}
 .winner{text-align:center;font:400 clamp(20px,6vw,36px)/1.1 var(--display);color:var(--gold);text-shadow:0 0 18px var(--gold)}
@@ -223,6 +226,7 @@ footer a{color:var(--gold)}
       <div class="score l"><div class="cand" id="nmL">LULA</div><div class="pc" id="pcL">0,00%</div><div class="votes" id="vL">0 votos</div></div>
       <div class="score r"><div class="cand" id="nmR">FLÁVIO BOLSONARO</div><div class="pc" id="pcR">0,00%</div><div class="votes" id="vR">0 votos</div></div>
     </div>
+    <div class="diff" id="diff" hidden><span class="dlbl">Diferença</span><span class="dnum" id="diffNum">0</span><span class="dlbl" id="diffTxt">votos</span></div>
     <div class="winner" id="winner" hidden></div>
     <p class="note">A barra de cada lutador é o quanto ele já tem dos votos de que precisa para vencer: metade dos votos válidos, considerando a apuração completa. O centro é a maioria. O percentual mostrado é dos votos válidos apurados até agora.</p>
   </section>
@@ -308,7 +312,7 @@ async function carregar(){
 
 function render(d){
   const zero = () => { ["fillL","fillR"].forEach(i=>$(i).style.width="0"); $("pcL").textContent=$("pcR").textContent="0,00%"; $("vL").textContent=$("vR").textContent="0 votos"; };
-  if (!d){ zero(); $("pst").textContent="0,00%"; $("pstbar").style.width="0"; $("hora").textContent="—"; $("winner").hidden=true; $("trophy").classList.remove("won"); document.body.classList.remove("lead","inv"); $("nmL").textContent="LULA"; $("nmR").textContent="FLÁVIO BOLSONARO"; window.luta && luta(null); return; }
+  if (!d){ zero(); $("pst").textContent="0,00%"; $("pstbar").style.width="0"; $("hora").textContent="—"; $("winner").hidden=true; $("trophy").classList.remove("won"); document.body.classList.remove("lead","inv"); $("nmL").textContent="LULA"; $("nmR").textContent="FLÁVIO BOLSONARO"; window.luta && luta(null); $("diff").hidden=true; return; }
   showMsg("");
   const pst = num(d.pst);
   $("pst").textContent = pct(d.pst) + "%";
@@ -326,6 +330,10 @@ function render(d){
   document.body.classList.toggle("inv", !!flavioLidera);
   document.body.classList.toggle("lead", !!(L && R && num(L.pvap) !== num(R.pvap)));
   window.luta && luta({L, R, inv: !!flavioLidera, pst});
+  const dv = Math.abs(num(L ? L.vap : 0) - num(R ? R.vap : 0));
+  $("diff").hidden = !(L && R);
+  $("diffNum").textContent = dv.toLocaleString("pt-BR");
+  $("diffTxt").textContent = dv === 0 ? "empate" : (dv === 1 ? "voto" : "votos") + " a favor de " + (flavioLidera ? "Flávio" : "Lula");
   const esq = flavioLidera ? R : L, dir = flavioLidera ? L : R;
   $("nmL").textContent = flavioLidera ? "FLÁVIO BOLSONARO" : "LULA";
   $("nmR").textContent = flavioLidera ? "LULA" : "FLÁVIO BOLSONARO";
