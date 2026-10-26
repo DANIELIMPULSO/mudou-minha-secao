@@ -199,7 +199,7 @@ footer a{color:var(--gold)}
       <div class="arena">
         <div class="name n1">LULA</div>
         <div class="vsmark">VS</div>
-        <div class="name n2">FLÁVIO<br>BOLSONARO</div>
+        <div class="name n2">FLAVINHO</div>
       </div>
     </div>
   </section>
@@ -215,7 +215,7 @@ footer a{color:var(--gold)}
     <div class="hud">
       <div class="life l"><div class="lname" id="lfNmL">LULA</div><div class="lbar"><i id="lfL" style="width:0"></i></div><div class="lpc" id="lfPcL">0,00%</div></div>
       <div class="timer" id="lfT">0%<small>APURADO</small></div>
-      <div class="life r"><div class="lname" id="lfNmR">FLÁVIO</div><div class="lbar"><i id="lfR" style="width:0"></i></div><div class="lpc" id="lfPcR">0,00%</div></div>
+      <div class="life r"><div class="lname" id="lfNmR">FLAVINHO</div><div class="lbar"><i id="lfR" style="width:0"></i></div><div class="lpc" id="lfPcR">0,00%</div></div>
     </div>
     <div class="ko off" id="ko" hidden><span class="kot">K.O.!</span><small id="koTipo">SOCO</small></div>
     <canvas id="luta" width="160" height="62" role="img" aria-label="Dois lutadores em pixel art representando os candidatos"></canvas>
@@ -247,7 +247,7 @@ footer a{color:var(--gold)}
     </div>
     <div class="scores">
       <div class="score l"><div class="cand" id="nmL">LULA</div><div class="pc" id="pcL">0,00%</div><div class="votes" id="vL">0 votos</div></div>
-      <div class="score r"><div class="cand" id="nmR">FLÁVIO BOLSONARO</div><div class="pc" id="pcR">0,00%</div><div class="votes" id="vR">0 votos</div></div>
+      <div class="score r"><div class="cand" id="nmR">FLAVINHO</div><div class="pc" id="pcR">0,00%</div><div class="votes" id="vR">0 votos</div></div>
     </div>
     <div class="diff" id="diff" hidden><span class="dlbl">Diferença</span><span class="dnum" id="diffNum">0</span><span class="dlbl" id="diffTxt">votos</span></div>
     <div class="winner" id="winner" hidden></div>
@@ -335,7 +335,7 @@ async function carregar(){
 
 function render(d){
   const zero = () => { ["fillL","fillR"].forEach(i=>$(i).style.width="0"); $("pcL").textContent=$("pcR").textContent="0,00%"; $("vL").textContent=$("vR").textContent="0 votos"; };
-  if (!d){ zero(); $("pst").textContent="0,00%"; $("pstbar").style.width="0"; $("hora").textContent="—"; $("winner").hidden=true; $("trophy").classList.remove("won"); document.body.classList.remove("lead","inv"); $("nmL").textContent="LULA"; $("nmR").textContent="FLÁVIO BOLSONARO"; window.luta && luta(null); $("diff").hidden=true; $("wins").hidden=true; document.body.classList.remove("fim"); return; }
+  if (!d){ zero(); $("pst").textContent="0,00%"; $("pstbar").style.width="0"; $("hora").textContent="—"; $("winner").hidden=true; $("trophy").classList.remove("won"); document.body.classList.remove("lead","inv"); $("nmL").textContent="LULA"; $("nmR").textContent="FLAVINHO"; window.luta && luta(null); $("diff").hidden=true; $("wins").hidden=true; document.body.classList.remove("fim"); return; }
   showMsg("");
   const pst = num(d.pst);
   $("pst").textContent = pct(d.pst) + "%";
@@ -364,17 +364,17 @@ function render(d){
   const noBrasil = $("uf").value === "br";
   const venceu = (noBrasil && ELEITO_BRASIL === "LULA" && L) ? L
     : eleito(L) ? L : eleito(R) ? R : (lider && num(L.pvap) !== num(R.pvap) && (pst >= 100 || mat)) ? lider : null;
-  const nomeV = venceu ? (venceu === L ? "LULA" : "FLÁVIO BOLSONARO") : null;
+  const nomeV = venceu ? (venceu === L ? "LULA" : "FLAVINHO") : null;
   window.luta && luta({L, R, inv: !!flavioLidera, pst, ko: !!venceu});
   $("wins").hidden = !venceu; document.body.classList.toggle("fim", !!venceu);
   if (venceu){ $("winsName").textContent = nomeV; $("wins").classList.toggle("azul", venceu === R); }
   const dv = Math.abs(num(L ? L.vap : 0) - num(R ? R.vap : 0));
   $("diff").hidden = !(L && R);
   $("diffNum").textContent = dv.toLocaleString("pt-BR");
-  $("diffTxt").textContent = dv === 0 ? "empate" : (dv === 1 ? "voto" : "votos") + " a favor de " + (flavioLidera ? "Flávio" : "Lula");
+  $("diffTxt").textContent = dv === 0 ? "empate" : (dv === 1 ? "voto" : "votos") + " a favor de " + (flavioLidera ? "Flavinho" : "Lula");
   const esq = flavioLidera ? R : L, dir = flavioLidera ? L : R;
-  $("nmL").textContent = flavioLidera ? "FLÁVIO BOLSONARO" : "LULA";
-  $("nmR").textContent = flavioLidera ? "LULA" : "FLÁVIO BOLSONARO";
+  $("nmL").textContent = flavioLidera ? "FLAVINHO" : "LULA";
+  $("nmR").textContent = flavioLidera ? "LULA" : "FLAVINHO";
   [[esq,"L"],[dir,"R"]].forEach(([c,k])=>{
     $("fill"+k).style.width = (avance(c)*50) + "%";
     $("pc"+k).textContent = pct(c ? c.pvap : 0) + "%";
@@ -419,7 +419,7 @@ setInterval(carregar, 30000);
   const cv=$("luta"), g=cv.getContext("2d"), W=160, H=62;
   const C={k:"#140c1c"};
   const LULA={nome:"LULA", hair:"#d8d8e0", hairD:"#a9a9b6", beard:"#c9c9d3", skin:"#d9a070", skinD:"#b47c52", top:"#3b3e4c", topD:"#262833", detail:"#ffffff", tie:"#e02b3a", tieD:"#8f1420", pants:"#2b2e3a", pantsD:"#1b1d26", shoe:"#2a1a10", star:true, cor:"#ff2a3d", corD:"#a8101f"};
-  const FLAVIO={nome:"FLÁVIO", hair:"#2a1d14", hairD:"#160f0a", beard:null, skin:"#f0c49a", skinD:"#cf9a6e", top:"#1f3f9e", topD:"#132a6e", detail:"#ffffff", tie:"#ffd23f", tieD:"#b8901c", pants:"#16224f", pantsD:"#0d1533", shoe:"#111", star:false, cor:"#2a7bff", corD:"#0f3fae"};
+  const FLAVIO={nome:"FLAVINHO", hair:"#2a1d14", hairD:"#160f0a", beard:null, skin:"#f0c49a", skinD:"#cf9a6e", top:"#1f3f9e", topD:"#132a6e", detail:"#ffffff", tie:"#ffd23f", tieD:"#b8901c", pants:"#16224f", pantsD:"#0d1533", shoe:"#111", star:false, cor:"#2a7bff", corD:"#0f3fae"};
   // desenha um lutador virado para a direita num canvas 24x40 (1px = 1 pixel do sprite)
   function sprite(f, pose, bob){
     const c=document.createElement("canvas"); c.width=26; c.height=42; const x=c.getContext("2d");
@@ -467,7 +467,7 @@ setInterval(carregar, 30000);
   let est={esq:LULA,dir:FLAVIO,lead:false,ko:false}, t=0, koT=-1;
   window.luta=function(info){
     const nmE=$("lfNmL"), nmD=$("lfNmR");
-    if (!info){ est={esq:LULA,dir:FLAVIO,lead:false,ko:false}; koT=-1; $("ko").hidden=true; $("lfL").style.width=$("lfR").style.width="0"; $("lfPcL").textContent=$("lfPcR").textContent="0,00%"; $("lfT").firstChild.nodeValue="0%"; nmE.textContent="LULA"; nmD.textContent="FLÁVIO"; pintar(); return; }
+    if (!info){ est={esq:LULA,dir:FLAVIO,lead:false,ko:false}; koT=-1; $("ko").hidden=true; $("lfL").style.width=$("lfR").style.width="0"; $("lfPcL").textContent=$("lfPcR").textContent="0,00%"; $("lfT").firstChild.nodeValue="0%"; nmE.textContent="LULA"; nmD.textContent="FLAVINHO"; pintar(); return; }
     const {L,R,inv,pst}=info, e=inv?R:L, dd=inv?L:R;
     const eraKo = est.ko && est.esq === (inv?FLAVIO:LULA);
     est={esq:inv?FLAVIO:LULA, dir:inv?LULA:FLAVIO, lead: !!(L&&R&&num(L.pvap)!==num(R.pvap)), ko: !!info.ko};
