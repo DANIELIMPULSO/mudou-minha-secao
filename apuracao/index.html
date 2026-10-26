@@ -121,7 +121,21 @@ body.lead.inv .n2, body.lead.inv .fill.l, body.lead.inv .score.l{animation:glowA
 body.lead:not(.inv) .n1{animation:inL .6s cubic-bezier(.2,1.4,.4,1) both,glowV 1s .6s ease-in-out infinite}
 body.lead.inv .n2{animation:inR .6s cubic-bezier(.2,1.4,.4,1) both,glowA 1s .6s ease-in-out infinite}
 /* Luta em pixel art com barras de vida */
-.fight{padding:14px 14px 0;display:grid;gap:8px;overflow:hidden}
+.fight{padding:14px 14px 0;display:grid;gap:8px;overflow:hidden;position:relative}
+.ko{position:absolute;right:7%;bottom:30%;z-index:3;text-align:center;pointer-events:none;padding-right:.15em;
+  font:400 clamp(32px,10vw,62px)/1 var(--display);font-style:italic;color:#fff;
+  background:linear-gradient(180deg,#fff 0%,#ffe36b 40%,#ff3b1f 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:2px #1a0600;filter:drop-shadow(0 0 14px rgba(255,90,0,.9)) drop-shadow(4px 5px 0 #000);animation:koin .5s cubic-bezier(.2,1.6,.4,1) both,throb 1s .5s ease-in-out infinite}
+@keyframes koin{from{transform:scale(4) rotate(-12deg);opacity:0}}
+.wins{display:grid;justify-items:center;gap:2px;padding:14px 12px;text-align:center;border-radius:14px;
+  background:radial-gradient(ellipse at 50% 50%,rgba(255,42,61,.35),transparent 70%),#0c0710;border:3px solid var(--gold);box-shadow:0 0 30px rgba(255,210,63,.55),inset 0 0 30px rgba(255,42,61,.35);animation:winsin .7s cubic-bezier(.2,1.5,.4,1) both}
+.wins.azul{background:radial-gradient(ellipse at 50% 50%,rgba(42,123,255,.35),transparent 70%),#070a14;box-shadow:0 0 30px rgba(255,210,63,.55),inset 0 0 30px rgba(42,123,255,.35)}
+.wname{font:400 clamp(30px,10vw,64px)/1 var(--display);font-style:italic;color:var(--p1);text-shadow:0 0 18px var(--p1),3px 3px 0 var(--p1d);text-wrap:balance;animation:glowV 1s ease-in-out infinite}
+.wins.azul .wname{color:var(--p2);text-shadow:0 0 18px var(--p2),3px 3px 0 var(--p2d);animation-name:glowA}
+.wword{font:400 clamp(40px,14vw,88px)/1 var(--display);font-style:italic;
+  background:linear-gradient(180deg,#fff 0%,#ffe36b 35%,#ff8a00 62%,#d10000 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:2px #1a0600;filter:drop-shadow(0 0 16px rgba(255,160,0,.75)) drop-shadow(4px 5px 0 #000);animation:throb 1.2s ease-in-out infinite}
+@keyframes winsin{from{transform:scale(.4);opacity:0}}
 .hud{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
 .life{display:grid;gap:4px;min-width:0}
 .life .lname{font:400 clamp(12px,3.6vw,16px)/1 var(--display);letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -188,6 +202,8 @@ footer a{color:var(--gold)}
     </div>
   </section>
 
+  <div class="wins" id="wins" hidden aria-live="polite"><span class="wname" id="winsName">LULA</span><span class="wword">WINS!</span></div>
+
   <div class="scopebox rgb" aria-live="polite">
     <span class="scopelbl">📍 Resultado de</span>
     <span class="scopename" id="scopeName">Brasil</span>
@@ -199,6 +215,7 @@ footer a{color:var(--gold)}
       <div class="timer" id="lfT">0%<small>APURADO</small></div>
       <div class="life r"><div class="lname" id="lfNmR">FLÁVIO</div><div class="lbar"><i id="lfR" style="width:0"></i></div><div class="lpc" id="lfPcR">0,00%</div></div>
     </div>
+    <div class="ko" id="ko" hidden>K.O.!</div>
     <canvas id="luta" width="160" height="62" role="img" aria-label="Dois lutadores em pixel art representando os candidatos"></canvas>
   </section>
 
@@ -316,7 +333,7 @@ async function carregar(){
 
 function render(d){
   const zero = () => { ["fillL","fillR"].forEach(i=>$(i).style.width="0"); $("pcL").textContent=$("pcR").textContent="0,00%"; $("vL").textContent=$("vR").textContent="0 votos"; };
-  if (!d){ zero(); $("pst").textContent="0,00%"; $("pstbar").style.width="0"; $("hora").textContent="—"; $("winner").hidden=true; $("trophy").classList.remove("won"); document.body.classList.remove("lead","inv"); $("nmL").textContent="LULA"; $("nmR").textContent="FLÁVIO BOLSONARO"; window.luta && luta(null); $("diff").hidden=true; return; }
+  if (!d){ zero(); $("pst").textContent="0,00%"; $("pstbar").style.width="0"; $("hora").textContent="—"; $("winner").hidden=true; $("trophy").classList.remove("won"); document.body.classList.remove("lead","inv"); $("nmL").textContent="LULA"; $("nmR").textContent="FLÁVIO BOLSONARO"; window.luta && luta(null); $("diff").hidden=true; $("wins").hidden=true; document.body.classList.remove("fim"); return; }
   showMsg("");
   const pst = num(d.pst);
   $("pst").textContent = pct(d.pst) + "%";
@@ -333,7 +350,12 @@ function render(d){
   const flavioLidera = R && L && num(R.pvap) > num(L.pvap);
   document.body.classList.toggle("inv", !!flavioLidera);
   document.body.classList.toggle("lead", !!(L && R && num(L.pvap) !== num(R.pvap)));
-  window.luta && luta({L, R, inv: !!flavioLidera, pst});
+  // Vencedor: marcado como eleito pelo TSE, ou apuração em 100% com alguém à frente
+  const venceu = eleito(L) ? L : eleito(R) ? R : (pst >= 100 && L && R && num(L.pvap) !== num(R.pvap) ? (flavioLidera ? R : L) : null);
+  const nomeV = venceu ? (venceu === L ? "LULA" : "FLÁVIO BOLSONARO") : null;
+  window.luta && luta({L, R, inv: !!flavioLidera, pst, ko: !!venceu});
+  $("wins").hidden = !venceu; document.body.classList.toggle("fim", !!venceu);
+  if (venceu){ $("winsName").textContent = nomeV; $("wins").classList.toggle("azul", venceu === R); }
   const dv = Math.abs(num(L ? L.vap : 0) - num(R ? R.vap : 0));
   $("diff").hidden = !(L && R);
   $("diffNum").textContent = dv.toLocaleString("pt-BR");
@@ -346,10 +368,10 @@ function render(d){
     $("pc"+k).textContent = pct(c ? c.pvap : 0) + "%";
     $("v"+k).textContent = num(c ? c.vap : 0).toLocaleString("pt-BR") + " votos";
   });
-  const w = eleito(L) ? "LULA" : eleito(R) ? "FLÁVIO BOLSONARO" : null;
+  const w = nomeV;
   $("trophy").classList.toggle("won", !!w);
   $("winner").hidden = !w;
-  if (w) $("winner").textContent = w + " VENCE!";
+  if (w) $("winner").textContent = w + " WINS!";
 }
 
 $("uf").addEventListener("change", carregar);
@@ -423,12 +445,15 @@ setInterval(carregar, 30000);
     x.putImageData(new ImageData(o,26,42),0,0);
     return c;
   }
-  let est={esq:LULA,dir:FLAVIO,lead:false}, t=0, hitE=0, hitD=0;
+  let est={esq:LULA,dir:FLAVIO,lead:false,ko:false}, t=0, koT=-1;
   window.luta=function(info){
     const nmE=$("lfNmL"), nmD=$("lfNmR");
-    if (!info){ est={esq:LULA,dir:FLAVIO,lead:false}; $("lfL").style.width=$("lfR").style.width="0"; $("lfPcL").textContent=$("lfPcR").textContent="0,00%"; $("lfT").firstChild.nodeValue="0%"; nmE.textContent="LULA"; nmD.textContent="FLÁVIO"; pintar(); return; }
+    if (!info){ est={esq:LULA,dir:FLAVIO,lead:false,ko:false}; koT=-1; $("ko").hidden=true; $("lfL").style.width=$("lfR").style.width="0"; $("lfPcL").textContent=$("lfPcR").textContent="0,00%"; $("lfT").firstChild.nodeValue="0%"; nmE.textContent="LULA"; nmD.textContent="FLÁVIO"; pintar(); return; }
     const {L,R,inv,pst}=info, e=inv?R:L, dd=inv?L:R;
-    est={esq:inv?FLAVIO:LULA, dir:inv?LULA:FLAVIO, lead: !!(L&&R&&num(L.pvap)!==num(R.pvap))};
+    const eraKo = est.ko && est.esq === (inv?FLAVIO:LULA);
+    est={esq:inv?FLAVIO:LULA, dir:inv?LULA:FLAVIO, lead: !!(L&&R&&num(L.pvap)!==num(R.pvap)), ko: !!info.ko};
+    if (est.ko && !eraKo) koT = 0; if (!est.ko) koT = -1;
+    $("ko").hidden = !est.ko;
     nmE.textContent=est.esq.nome; nmD.textContent=est.dir.nome;
     [[e,"L",est.esq],[dd,"R",est.dir]].forEach(([c,k,f])=>{ const v=c?num(c.pvap):0; const b=$("lf"+k);
       b.style.width=Math.min(100,v)+"%"; b.style.background=`linear-gradient(180deg,${f.cor},${f.corD})`; $("lfPc"+k).textContent=pct(v)+"%";
@@ -442,21 +467,37 @@ setInterval(carregar, 30000);
     g.fillStyle="#2a2532"; g.fillRect(0,48,W,14); g.fillStyle="#6b6474"; g.fillRect(0,47,W,1);
     for(let x=0;x<W;x+=12){ g.fillStyle="#342e3d"; g.fillRect(x+(t|0)%2,54,6,1); }
   }
+  function estrelas(cx,cy){ for(let i=0;i<3;i++){ const a=t*.3+i*2.09, x=cx+Math.cos(a)*6, y=cy+Math.sin(a)*2; g.fillStyle=i%2?"#ffd23f":"#fff4b0"; g.fillRect(x|0,y|0,2,2); g.fillRect((x|0)-1,(y|0)+0,1,1); } }
   function pintar(){
     chao();
-    const fase=(t/10)|0, bob=fase%2;
+    const fase=(t/10)|0, bob=fase%2, y=8;
+    if (est.ko){
+      // Nocaute: vencedor (esquerda) avança e soca; derrotado cai e fica no chão. Repete a cada 8s.
+      const k = koT % 160;
+      const xe = 40 + Math.min(k,6)*3.3, xd0 = 94;
+      const pe = (k>=4 && k<16) ? "soco" : (k>=16 && fase%4<3) ? "vitoria" : "guarda";
+      const queda = Math.max(0, Math.min(1, (k-8)/10)), ang = queda*Math.PI/2, desl = queda*12;
+      const se = sprite(est.esq, pe, k>=16 ? bob : 0), sd = sprite(est.dir, "guarda", 0);
+      g.fillStyle="rgba(0,0,0,.45)"; g.fillRect(xe+3,y+40,20,3); g.fillRect(xd0+desl+3,y+40,20+queda*16,3);
+      if (Math.sin(t*.25)>0){ g.save(); g.shadowColor=est.esq.cor; g.shadowBlur=10; g.drawImage(se,xe,y); g.drawImage(se,xe,y); g.restore(); }
+      g.drawImage(se,xe,y);
+      // derrotado: gira pelos pés e cai de costas para a direita
+      const px = xd0 + 13 + desl, py = y + 40 - queda*4;
+      g.save(); g.translate(px,py); g.rotate(ang); g.scale(-1,1); if (k>=8 && k<12) g.globalAlpha = (k%2)?.4:1; g.drawImage(sd,-13,-40); g.restore();
+      if (k>=4 && k<10){ g.fillStyle="#fff4b0"; g.fillRect(xe+27,y+13,4,4); g.fillStyle="#ffd23f"; g.fillRect(xe+25,y+11,1,1); g.fillRect(xe+32,y+18,1,1); g.fillRect(xe+31,y+11,1,1); }
+      if (k>=18) estrelas(px+33, py-6);
+      koT++;
+      return;
+    }
     const golpeE = est.lead && (t%60)<6, golpeD = (t%90)>=45 && (t%90)<50;
     const vitE = est.lead && (t%120)>=90;
     const pe = golpeE?"soco":vitE?"vitoria":"guarda", pd = golpeD?"soco":"guarda";
     const se=sprite(est.esq,pe,bob), sd=sprite(est.dir,pd,1-bob);
-    const xe=40, xd=94, y=8;
-    // sombra
+    const xe=40, xd=94;
     g.fillStyle="rgba(0,0,0,.45)"; g.fillRect(xe+3,y+40,20,3); g.fillRect(xd+3,y+40,20,3);
-    // brilho piscando no líder
     if (est.lead && Math.sin(t*.25)>0){ g.save(); g.shadowColor=est.esq.cor; g.shadowBlur=10; g.drawImage(se,xe,y); g.drawImage(se,xe,y); g.restore(); }
     g.drawImage(se,xe,y);
     g.save(); g.translate(xd+26,y); g.scale(-1,1); g.drawImage(sd,0,0); g.restore();
-    // faísca do soco
     if (golpeE){ g.fillStyle="#fff4b0"; g.fillRect(xe+27,y+15,3,3); g.fillStyle="#ffd23f"; g.fillRect(xe+26,y+13,1,1); g.fillRect(xe+30,y+18,1,1); }
   }
   pintar();
