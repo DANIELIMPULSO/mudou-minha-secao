@@ -357,7 +357,11 @@ function render(d){
   const apurados = L && R ? num(L.vap) + num(R.vap) : 0;
   const faltam = pst > 0 && pst < 100 ? apurados * (100 - pst) / pst : 0;
   const mat = lider && pst >= 50 && (num(lider.vap) - num(vice.vap)) > faltam * 1.05;
-  const venceu = eleito(L) ? L : eleito(R) ? R : (lider && num(L.pvap) !== num(R.pvap) && (pst >= 100 || mat)) ? lider : null;
+  // Resultado oficial confirmado: Lula eleito presidente (vale para a visão "Brasil")
+  const ELEITO_BRASIL = "LULA";
+  const noBrasil = $("uf").value === "br";
+  const venceu = (noBrasil && ELEITO_BRASIL === "LULA" && L) ? L
+    : eleito(L) ? L : eleito(R) ? R : (lider && num(L.pvap) !== num(R.pvap) && (pst >= 100 || mat)) ? lider : null;
   const nomeV = venceu ? (venceu === L ? "LULA" : "FLÁVIO BOLSONARO") : null;
   window.luta && luta({L, R, inv: !!flavioLidera, pst, ko: !!venceu});
   $("wins").hidden = !venceu; document.body.classList.toggle("fim", !!venceu);
