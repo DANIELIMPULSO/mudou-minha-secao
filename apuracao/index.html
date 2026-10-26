@@ -346,12 +346,18 @@ function render(d){
 
   // Avanço até o centro: fração dos votos necessários para a maioria, projetada para 100% das seções
   const avance = c => c ? Math.min(1, (num(c.pvap)/100) * (pst/100) * 2) : 0;
-  const eleito = c => c && (String(c.e).toLowerCase()==="s" || /^eleito/i.test(c.st||""));
+  // "Eleito" pelo TSE: aceita e:"s"/"S", ou qualquer campo de situação com texto "Eleito"
+  const eleito = c => c && (String(c.e).toLowerCase()==="s" || Object.values(c).some(v => typeof v==="string" && /^eleit[oa]/i.test(v.trim())));
   const flavioLidera = R && L && num(R.pvap) > num(L.pvap);
   document.body.classList.toggle("inv", !!flavioLidera);
   document.body.classList.toggle("lead", !!(L && R && num(L.pvap) !== num(R.pvap)));
   // Vencedor: marcado como eleito pelo TSE, ou apuração em 100% com alguém à frente
-  const venceu = eleito(L) ? L : eleito(R) ? R : (pst >= 100 && L && R && num(L.pvap) !== num(R.pvap) ? (flavioLidera ? R : L) : null);
+  // ...ou matematicamente: a vantagem já supera todos os votos válidos que ainda faltam apurar (estimados pelas seções restantes)
+  const lider = L && R ? (flavioLidera ? R : L) : null, vice = lider ? (lider === L ? R : L) : null;
+  const apurados = L && R ? num(L.vap) + num(R.vap) : 0;
+  const faltam = pst > 0 && pst < 100 ? apurados * (100 - pst) / pst : 0;
+  const mat = lider && pst >= 50 && (num(lider.vap) - num(vice.vap)) > faltam * 1.05;
+  const venceu = eleito(L) ? L : eleito(R) ? R : (lider && num(L.pvap) !== num(R.pvap) && (pst >= 100 || mat)) ? lider : null;
   const nomeV = venceu ? (venceu === L ? "LULA" : "FLÁVIO BOLSONARO") : null;
   window.luta && luta({L, R, inv: !!flavioLidera, pst, ko: !!venceu});
   $("wins").hidden = !venceu; document.body.classList.toggle("fim", !!venceu);
